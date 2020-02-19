@@ -26,8 +26,7 @@ const binance = require('node-binance-api')().options({
     APIKEY: config.apiKey,
     APISECRET: config.apiSecret,
     useServerTime: true // If you get timestamp errors, synchronize to server time at startup
-  });
-
+});
 
 let lookback = [];
 
@@ -51,7 +50,6 @@ binance.candlesticks(pair, interval, (error, ticks, symbol) => {
         auxLookback = auxLookback.slice(i + 1, lookback.length);
         lookback[i]["ema9"] = parseFloat(ema(auxLookback, lookback[i], "ema9", 9))
     }
-    strategyData.onRealTime(lookback.slice(1, lookback.length), lookback[0], paperTrading); //BackTEST
 }, {limit: candleLimit, endTime: timeUntillNow});
 
 binance.websockets.candlesticks([pair], interval, (candlesticks) => {

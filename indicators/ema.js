@@ -11,7 +11,6 @@ module.exports = function ema (lookback, actualCandle, key, length, source_key) 
       prev_ema = sum / length
     }
     var multiplier = 2 / (length + 1)
-    console.log(`Calculate: (${actualCandle[source_key]} - ${prev_ema}) * ${multiplier} + ${prev_ema}`)
     return (actualCandle[source_key] - prev_ema) * multiplier + prev_ema
   }
 }
