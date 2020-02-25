@@ -1,17 +1,20 @@
-module.exports = function ema (lookback, actualCandle, key, length, source_key) {
-  let auxLookback = lookback.slice();
-  if (!source_key) source_key = 'close'
+module.exports = function ema (bot, key, length, source_key) {
+  let auxLookback = bot.lookback.slice();
+  auxLookback.unshift(bot.actualCandle);
+  if (!source_key) source_key = 'close';
   if (auxLookback.length >= length) {
-    var prev_ema = lookback[0][key]
+    let prev_ema = bot.lookback[0][key]
     if (typeof prev_ema === 'undefined' || isNaN(prev_ema)) {
-      var sum = 0
+      let sum = 0;
       auxLookback.slice(0, length).forEach(function (candle) {
-        sum += candle[source_key]
+        sum += candle[source_key];
       })
-      prev_ema = sum / length
+      let ema = sum / length;
+      bot.actualCandle[key] = ema;
+    } else {
+      let multiplier = 2 / (length + 1);
+      bot.actualCandle[key] = (bot.actualCandle[source_key] - prev_ema) * multiplier + prev_ema;
     }
-    var multiplier = 2 / (length + 1)
-    return (actualCandle[source_key] - prev_ema) * multiplier + prev_ema
   }
 }
 

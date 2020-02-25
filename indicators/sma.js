@@ -1,16 +1,14 @@
-module.exports = function sma (lookback, actualCandle, length, source_key) {
-  let auxLookback = lookback.slice();
-  auxLookback.unshift(actualCandle);
+module.exports = function sma (bot, key, length, source_key) {
+  let auxLookback = bot.lookback.slice();
+  auxLookback.unshift(bot.actualCandle);
   if (!source_key) source_key = 'close'
-  if (lookback.length >= length) {
+  if (bot.lookback.length >= length) {
     let SMA = auxLookback
       .slice(0, length)
       .reduce((sum, candle) => {
         return sum + candle["close"]
       }, 0)
-    return SMA / length
-  } else{
-    console.log("Length is too high. Increase CandleLimit");
+    bot.actualCandle[key] = SMA / length
   }
 }
 
