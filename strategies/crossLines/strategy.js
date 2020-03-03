@@ -15,7 +15,7 @@ module.exports = {
         let sma80 = sma(lookback, actualCandle, 80)
 
         if(ema9 > sma30 && ema9 > sma80 && sma30 > sma80){
-            if(paperTrading.state === 'initial' || paperTrading === 'sell') {
+            if(paperTrading.state === 'initial' || paperTrading.state === 'sell') {
                 console.log("COMPROOOO");
                 paperTrading.state = 'buy';
                 buy(paperTrading, actualCandle.close);

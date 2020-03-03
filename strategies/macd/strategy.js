@@ -31,14 +31,12 @@ module.exports = {
                 if(bot.lookback[0].macd < bot.lookback[0].signal){
                     if(bot.actualCandle.macdState === "up"){
                         if(paperTrading.state === 'initial' || paperTrading.state === 'sell') {
-                            console.log("COMPROOOOOOOooo");
-                            console.log(bot.actualCandle.time);
+                            console.log(`\n TIME: ${bot.actualCandle.time} ------ COMPRA \n`);
                             paperTrading.state = 'buy';
                             buy(paperTrading, bot.actualCandle.close);
                         }
                     } else if(paperTrading.state === 'buy'){
-                        console.log("VENDOOO")
-                        console.log(bot.actualCandle.time);
+                        console.log(`\n TIME: ${bot.actualCandle.time} ------ VENTA \n`);
                         paperTrading.state = 'sell';
                         console.log("BENEFICIO: " + sell(paperTrading, bot.actualCandle.close));
                     }
@@ -46,8 +44,7 @@ module.exports = {
                  
             }
             else if(paperTrading.state === 'buy'){
-                console.log("VENDOOO")
-                console.log(bot.actualCandle.time);
+                console.log(`\n TIME: ${bot.actualCandle.time} ------ VENTA \n`);
                 paperTrading.state = 'sell';
                 console.log("BENEFICIO: " + sell(paperTrading, bot.actualCandle.close));
             }

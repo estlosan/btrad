@@ -7,11 +7,11 @@ const { buy, sell } = require('./../../paperTrading.js');
 
 module.exports = {
 
-    onRealTime: function(lookback, actualCandle, paperTrading) {
+    onRealTime: function(bot, paperTrading) {
     
     },
 
-    onCandle: function(lookback, actualCandle, paperTrading) {
+    onCandle: function(bot, paperTrading) {
 
     }
 }
