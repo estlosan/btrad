@@ -1,42 +1,30 @@
-var precisionRound = function(number, precision) {
-  var factor = Math.pow(10, precision)
-  return Math.round(number * factor) / factor
+module.exports = function rsi (bot, key, length, source_key) {
+    if(!bot.lookback[0]) return;
+    bot.actualCandle.dif = bot.actualCandle.close - bot.lookback[0].close;
+    if(bot.actualCandle.dif > 0){
+        bot.actualCandle.up = bot.actualCandle.dif;
+        bot.actualCandle.down = 0;
+    } else{
+        bot.actualCandle.down = Math.abs(bot.actualCandle.dif);
+        bot.actualCandle.up = 0;
+    }
+    let auxLookback = bot.lookback.slice();
+    auxLookback.unshift(bot.actualCandle);
+    if (!source_key) source_key = 'close'
+    if (bot.lookback.length >= length) {
+        let smaGain = auxLookback
+        .slice(0, length)
+        .reduce((sum, candle) => {
+            return sum + candle.up
+        }, 0)
+        let smaLoss = auxLookback
+        .slice(0, length)
+        .reduce((sum, candle) => {
+            return sum + candle.down
+        }, 0)
+        bot.actualCandle.avGain = smaGain / length
+        bot.actualCandle.avLoss = smaLoss / length
+        bot.actualCandle.rs = bot.actualCandle.avGain / bot.actualCandle.avLoss
+        if(bot.actualCandle.rs != 0) bot.actualCandle[key] = 100 - (100 / (1 + bot.actualCandle.rs))
+    }
 }
-module.exports = function rsi (s, key, length) {
-  if (s.lookback.length >= length) {
-    var avg_gain = s.lookback[0][key + '_avg_gain']
-    var avg_loss = s.lookback[0][key + '_avg_loss']
-    if (typeof avg_gain === 'undefined') {
-      var gain_sum = 0
-      var loss_sum = 0
-      var last_close
-      s.lookback.slice(0, length).forEach(function (period) {
-        if (last_close) {
-          if (period.close > last_close) {
-            gain_sum += period.close - last_close
-          }
-          else {
-            loss_sum += last_close - period.close
-          }
-        }
-        last_close = period.close
-      })
-      s.period[key + '_avg_gain'] = gain_sum / length
-      s.period[key + '_avg_loss'] = loss_sum / length
-    }
-    else {
-      var current_gain = s.period.close - s.lookback[0].close
-      s.period[key + '_avg_gain'] = ((avg_gain * (length - 1)) + (current_gain > 0 ? current_gain : 0)) / length
-      var current_loss = s.lookback[0].close - s.period.close
-      s.period[key + '_avg_loss'] = ((avg_loss * (length - 1)) + (current_loss > 0 ? current_loss : 0)) / length
-    }
-
-    if(s.period[key + '_avg_loss'] == 0) {
-      s.period[key] = 100
-    } else {
-      var rs = s.period[key + '_avg_gain'] / s.period[key + '_avg_loss']
-      s.period[key] = precisionRound(100 - (100 / (1 + rs)), 2)
-    }
-  }
-}
-

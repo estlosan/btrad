@@ -1,4 +1,4 @@
-const config = require('./config.js');
+const config = require('./config/config.js');
 const path = require('path');
 
 const interval = config.interval;
@@ -27,7 +27,7 @@ paperTrading.state = 'initial';
 
 //CODE
 
-let strategyData = require(path.resolve(__dirname, `./strategies/${config.strategyName}/strategy.js`))
+let strategyData = require(path.resolve(__dirname, `./../strategies/${config.strategyName}/strategy.js`))
 
 
 bot.actualCandle = undefined;

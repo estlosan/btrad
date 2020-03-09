@@ -7,7 +7,7 @@ let bot = {};
 let paperTrading = {}
 //CODE
 
-let strategyData = require(path.resolve(__dirname, `./strategies/${config.strategyName}/strategy.js`))
+let strategyData = require(path.resolve(__dirname, `./../strategies/${config.strategyName}/strategy.js`))
 
 
 bot.actualCandle = undefined;

@@ -1,5 +1,5 @@
 const ema = require('./../../indicators/ema');
-const sma = require('./../../indicators/sma');
+const bot = require('./../../node/telegramBot');
 const { buy, sell } = require('./../../paperTrading.js');
 
 //  buy(paperTrading, actualCandle.close);
@@ -15,17 +15,17 @@ module.exports = {
         ema(bot, "ema6", 6);
         ema(bot, "ema14", 14);
         ema(bot, "ema21", 21);
-        sma(bot, "sma100", 100);
+        ema(bot, "ema50", 50);
 
         let buyValueUp = bot.actualCandle.ema6;
         let buyValueDown = bot.actualCandle.ema21;
 
-        let sellValueUp = bot.actualCandle.ema14;
+        let sellValueUp = bot.actualCandle.ema21;
         let sellValueDown = bot.actualCandle.ema6;
 
         // Histograma mayior que 0 y macd > signal  (1D)
-        if (bot.lookback[0] && bot.lookback[0].sma100 != undefined){
-            if(bot.actualCandle.sma100 > bot.lookback[0].sma100) {    
+        if (bot.lookback[0] && bot.lookback[0].ema50 != undefined){
+            if(bot.actualCandle.ema50 > bot.lookback[0].ema50) {    
                 if(paperTrading.state === 'buy' && sellValueUp > sellValueDown){
                     console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
                     paperTrading.state = 'sell';
@@ -44,7 +44,7 @@ module.exports = {
                 paperTrading.state = 'sell';
                 console.log("BENEFICIO: " + sell(paperTrading, bot.actualCandle.close) + "\n");
             } 
-        }
+        } 
     }
 }
 
