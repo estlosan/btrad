@@ -1,6 +1,6 @@
 const ema = require('./../../indicators/ema');
-const bot = require('./../../node/telegramBot');
-const { buy, sell } = require('./../../paperTrading.js');
+const sendMsg = require('./../../node/telegramBot');
+const { buy, sell } = require('./../../node/paperTrading.js');
 
 //  buy(paperTrading, actualCandle.close);
 //  sell(paperTrading, actualCandle.close);
@@ -13,7 +13,6 @@ module.exports = {
 
     onCandle: function(bot, paperTrading) {
         ema(bot, "ema6", 6);
-        ema(bot, "ema14", 14);
         ema(bot, "ema21", 21);
         ema(bot, "ema50", 50);
 
@@ -23,28 +22,30 @@ module.exports = {
         let sellValueUp = bot.actualCandle.ema21;
         let sellValueDown = bot.actualCandle.ema6;
 
-        // Histograma mayior que 0 y macd > signal  (1D)
-        if (bot.lookback[0] && bot.lookback[0].ema50 != undefined){
-            if(bot.actualCandle.ema50 > bot.lookback[0].ema50) {    
-                if(paperTrading.state === 'buy' && sellValueUp > sellValueDown){
-                    console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
-                    paperTrading.state = 'sell';
-                    console.log("BENEFICIO: " + sell(paperTrading, bot.actualCandle.close) + "\n");
-                } 
-                else if(buyValueUp > buyValueDown){
-                    if(paperTrading.state === 'initial' || paperTrading.state === 'sell') {
-                        console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
-                        paperTrading.state = 'buy';
-                        buy(paperTrading, bot.actualCandle.close);
-                    }
-                }
-            } 
-            else if(paperTrading.state === 'buy' && sellValueUp > sellValueDown){
-                console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
-                paperTrading.state = 'sell';
-                console.log("BENEFICIO: " + sell(paperTrading, bot.actualCandle.close) + "\n");
-            } 
+        // Histograma mayor que 0 y macd > signal  (1D)
+        if (!bot.lookback[0] || bot.lookback[0].ema50 == undefined){
+            return; 
         } 
-    }
+
+        if(paperTrading.state === 'initial' || paperTrading.state === 'sell') {
+            if(bot.actualCandle.ema50 > bot.lookback[0].ema50 && buyValueUp > buyValueDown){
+                console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
+                paperTrading.state = 'buy';
+                buy(paperTrading, bot.actualCandle.close);
+                if(bot.tradingMode == 'realTime'){
+                    sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close);
+                }
+            }
+        }
+        else if(paperTrading.state === 'buy' && sellValueUp > sellValueDown){
+            console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
+            paperTrading.state = 'sell';
+            let benefice = sell(paperTrading, bot.actualCandle.close); 
+            console.log("BENEFICIO: " + benefice + "\n");
+            if(bot.tradingMode == 'realTime'){
+                sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close, benefice);
+            }
+        }
+    } 
 }
 

@@ -2,14 +2,15 @@
   "name": "binancebot",
   "version": "1.0.0",
   "description": "",
-  "main": "run.js",
+  "main": "node/run.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "node-binance-api": "^0.9.9",
+    "dotenv": "^8.2.0",
+    "node-binance-api": "^0.10.4",
     "node-telegram-bot-api": "^0.40.0"
   }
 }

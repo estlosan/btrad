@@ -1,6 +1,6 @@
 const ema = require('./../../indicators/ema');
-const rsi = require('./../../indicators/rsi');
-const { buy, sell } = require('./../../paperTrading.js');
+const sendMsg = require('./../../node/telegramBot');
+const { buy, sell } = require('./../../node/paperTrading.js');
 
 //  buy(paperTrading, actualCandle.close);
 //  sell(paperTrading, actualCandle.close);
@@ -12,25 +12,72 @@ module.exports = {
     },
 
     onCandle: function(bot, paperTrading) {
-        rsi(bot, "rsi14", 14);
+        ema(bot, "ema6", 6);
+        ema(bot, "ema21", 21);
+        ema(bot, "ema50", 50);
 
-        if(bot.actualCandle.rsi14 < 30){
-            if(paperTrading.state === 'initial' || paperTrading.state === 'sell') {
+        let buyValueUp = bot.actualCandle.ema6;
+        let buyValueDown = bot.actualCandle.ema21;
+
+        let sellValueUp = bot.actualCandle.ema21;
+        let sellValueDown = bot.actualCandle.ema6;
+
+        // Histograma mayor que 0 y macd > signal  (1D)
+        if (!bot.lookback[0] || bot.lookback[0].ema50 == undefined){
+            return; 
+        } 
+
+        if(paperTrading.state === 'initial' || paperTrading.state === 'sell') {
+            if(bot.actualCandle.ema50 > bot.lookback[0].ema50 && buyValueUp > buyValueDown){
                 console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
                 paperTrading.state = 'buy';
                 buy(paperTrading, bot.actualCandle.close);
-            }
-        }
-        else {
-            bot.actualCandle.stopTrading = bot.actualCandle.close * 0,05;
-            if(bot.actualCandle.close < bot.lookback[0].stopTrading){
-                if(paperTrading.state === 'buy'){
-                    console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
-                    paperTrading.state = 'sell';
-                    console.log("BENEFICIO: " + sell(paperTrading, bot.actualCandle.close) + "\n");
+                if(bot.tradingMode == 'realTime'){
+                    sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close);
                 }
             }
         }
-    }
+        else if(paperTrading.state === 'buy' && sellValueUp > sellValueDown){
+            console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
+            paperTrading.state = 'sell';
+            let benefice = sell(paperTrading, bot.actualCandle.close); 
+            console.log("BENEFICIO: " + benefice + "\n");
+            if(bot.tradingMode == 'realTime'){
+                sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close, benefice);
+            }
+        }
+
+
+       /*  if(!(bot.actualCandle.ema50 > bot.lookback[0].ema50)) {    
+            if(paperTrading.state === 'buy' && sellValueUp > sellValueDown){
+                console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
+                paperTrading.state = 'sell';
+                let benefice = sell(paperTrading, bot.actualCandle.close); 
+                console.log("BENEFICIO: " + benefice + "\n");
+                if(bot.tradingMode == 'realTime'){
+                    sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close, benefice);
+                }
+            } 
+            else if(buyValueUp > buyValueDown){
+                if(paperTrading.state === 'initial' || paperTrading.state === 'sell') {
+                    console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
+                    paperTrading.state = 'buy';
+                    buy(paperTrading, bot.actualCandle.close);
+                    if(bot.tradingMode == 'realTime'){
+                        sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close);
+                    }
+                }
+            }
+        } 
+        else if(paperTrading.state === 'buy' && sellValueUp > sellValueDown){
+            console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
+            paperTrading.state = 'sell';
+            let benefice = sell(paperTrading, bot.actualCandle.close); 
+            console.log("BENEFICIO: " + benefice + "\n");
+            if(bot.tradingMode == 'realTime'){
+                sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close, benefice);
+            }
+        } */
+    } 
 }
 
