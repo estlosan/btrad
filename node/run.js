@@ -1,4 +1,4 @@
-// node run.js BTCUSDT strategyName backtest
+// node run.js BTCUSDT strategyName true
 const config = require('./../config.js');
 const path = require('path');
 
@@ -9,7 +9,7 @@ let bot = {};
 bot.actualCandle = undefined;
 bot.lookback = [];
 bot.pair = process.argv[2] || config.pair;
-bot.tradingMode = process.argv[4] || config.tradingMode;
+bot.realTime = process.argv[4] || config.realTime;
 
 
 // INITIAL CONFIG
@@ -18,6 +18,7 @@ const timeUntillNow = Date.now();
 const interval = config.interval;
 const strategyName = process.argv[3] || config.strategyName
 const candleLimit = config.candleLimit;
+const minCandles = config.minCandles;
 const strategyData = require(path.resolve(__dirname, `./../strategies/${strategyName}/strategy.js`))
 
 //PaperTrading
@@ -36,13 +37,6 @@ const binance = require('node-binance-api')().options({
     useServerTime: true // If you get timestamp errors, synchronize to server time at startup
 });
 
-binance.balance((error, balances) => {
-    if ( error ) return console.error(error);
-    let coin = bot.pair.slice(0,3).toString();
-    console.log(`${coin} balance: ${balances[coin].available}`);
-});
-
-
 // CODE
 
 function calculateTime(timestamp){
@@ -58,11 +52,23 @@ function calculateTime(timestamp){
     return timeInDate;
 }
 
-try{
+const init = async () => {
+
+    const balances = await binance.balance();
+    let coin = bot.pair.slice(0,3).toString();
+    if(balances[coin].available > 0.001) {
+        paperTrading.quantity = balances[coin].available;
+        paperTrading.state = 'buy';
+        paperTrading.money = 0;
+    }
+    console.log(`${coin} balance: ${balances[coin].available}`);
+
+
     // Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
     binance.candlesticks(bot.pair, interval, (error, ticks, symbol) => {
         ticks.pop(); // Eliminamos el valor actual
         for (let i = 0; i < ticks.length; i++) {
+            if(i === minCandles) bot.enoughCandles = true;
             let [time, open, high, low, close, volume, closeTime, assetVolume, trades, buyBaseVolume, buyAssetVolume, ignored] = ticks[i];
             bot.actualCandle = {
                 time: calculateTime(time),
@@ -76,7 +82,7 @@ try{
             bot.lookback.unshift(bot.actualCandle);
         }
 
-        if(bot.tradingMode == "realTime"){
+        if(bot.realTime){
             binance.websockets.candlesticks([bot.pair], interval, (candlesticks) => {
                 let { e:eventType, E:eventTime, s:symbol, k:ticks } = candlesticks;
                 let { o:open, h:high, l:low, c:close, v:volume, n:trades, i:interval, x:isFinal, q:quoteVolume, V:buyVolume, Q:quoteBuyVolume } = ticks;
@@ -102,6 +108,6 @@ try{
             });
         }
     }, {limit: candleLimit, endTime: timeUntillNow});
-} catch (error){
-    console.log(`Error in ${bot.pair}`);
 }
+
+init();
