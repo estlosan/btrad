@@ -1,4 +1,5 @@
 // node run.js BTCUSDT strategyName true
+const { sendMsg } = require('./../node/telegramBot');
 const config = require('./../config.js');
 const path = require('path');
 
@@ -54,60 +55,65 @@ function calculateTime(timestamp){
 
 const init = async () => {
 
-    const balances = await binance.balance();
-    let coin = bot.pair.slice(0,3).toString();
-    if(balances[coin].available > 0.001) {
-        paperTrading.quantity = balances[coin].available;
-        paperTrading.state = 'buy';
-        paperTrading.money = 0;
-    }
-    console.log(`${coin} balance: ${balances[coin].available}`);
-
-
-    // Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
-    binance.candlesticks(bot.pair, interval, (error, ticks, symbol) => {
-        ticks.pop(); // Eliminamos el valor actual
-        for (let i = 0; i < ticks.length; i++) {
-            if(i === minCandles) bot.enoughCandles = true;
-            let [time, open, high, low, close, volume, closeTime, assetVolume, trades, buyBaseVolume, buyAssetVolume, ignored] = ticks[i];
-            bot.actualCandle = {
-                time: calculateTime(time),
-                open: parseFloat(open),
-                high: parseFloat(high),
-                low: parseFloat(low),
-                close: parseFloat(close),
-                volume: parseFloat(volume),
-            }
-            strategyData.onCandle(bot, paperTrading)
-            bot.lookback.unshift(bot.actualCandle);
+    try {
+        const balances = await binance.balance();
+        let coin = bot.pair.slice(0,3).toString();
+        if(balances[coin].available > 0.001) {
+            paperTrading.quantity = balances[coin].available;
+            paperTrading.state = 'buy';
+            paperTrading.money = 0;
         }
+        console.log(`${coin} balance: ${balances[coin].available}`);
 
-        if(bot.realTime){
-            binance.websockets.candlesticks([bot.pair], interval, (candlesticks) => {
-                let { e:eventType, E:eventTime, s:symbol, k:ticks } = candlesticks;
-                let { o:open, h:high, l:low, c:close, v:volume, n:trades, i:interval, x:isFinal, q:quoteVolume, V:buyVolume, Q:quoteBuyVolume } = ticks;
-                console.log(symbol+" "+interval+" candlestick update");
+
+        // Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
+        binance.candlesticks(bot.pair, interval, (error, ticks, symbol) => {
+            ticks.pop(); // Eliminamos el valor actual
+            for (let i = 0; i < ticks.length; i++) {
+                if(i === minCandles) bot.enoughCandles = true;
+                let [time, open, high, low, close, volume, closeTime, assetVolume, trades, buyBaseVolume, buyAssetVolume, ignored] = ticks[i];
                 bot.actualCandle = {
-                    time: calculateTime(eventTime),
+                    time: calculateTime(time),
                     open: parseFloat(open),
                     high: parseFloat(high),
                     low: parseFloat(low),
                     close: parseFloat(close),
                     volume: parseFloat(volume),
                 }
-                if (isFinal) {
-                    console.log(`\n > New Candle ${bot.actualCandle.time}`);
-                    bot.lookback.pop();
-                    strategyData.onCandle(bot, paperTrading);
-                    bot.lookback.unshift(bot.actualCandle);
-                }
-                else{
-                // Strategy
-                    strategyData.onRealTime(bot, paperTrading);
-                }
-            });
-        }
-    }, {limit: candleLimit, endTime: timeUntillNow});
+                strategyData.onCandle(bot, paperTrading)
+                bot.lookback.unshift(bot.actualCandle);
+            }
+
+            if(bot.realTime){
+                bot.telegramAlert = true;
+                paperTrading.state = 'initial';
+                binance.websockets.candlesticks([bot.pair], interval, (candlesticks) => {
+                    let { e:eventType, E:eventTime, s:symbol, k:ticks } = candlesticks;
+                    let { o:open, h:high, l:low, c:close, v:volume, n:trades, i:interval, x:isFinal, q:quoteVolume, V:buyVolume, Q:quoteBuyVolume } = ticks;
+                    bot.actualCandle = {
+                        time: calculateTime(eventTime),
+                        open: parseFloat(open),
+                        high: parseFloat(high),
+                        low: parseFloat(low),
+                        close: parseFloat(close),
+                        volume: parseFloat(volume),
+                    }
+                    if (isFinal) {
+                        console.log(`\n > New Candle ${bot.actualCandle.time}`);
+                        bot.lookback.pop();
+                        strategyData.onCandle(bot, paperTrading);
+                        bot.lookback.unshift(bot.actualCandle);
+                    }
+                    else{
+                    // Strategy
+                        strategyData.onRealTime(bot, paperTrading);
+                    }
+                });
+            }
+        }, {limit: candleLimit, endTime: timeUntillNow});
+    } catch(error){
+        console.log("ERROR: " + error);
+    }
 }
 
 init();

@@ -12,7 +12,7 @@ config.minCandles = 150;
 config.candleLimit = 365 + config.minCandles + 1; //Obtiene la actual y la borramos (Velas + Aditivo + Pop)
 config.strategyName = "diaria-6-21-50";
 
-config.realTime = false;
+config.realTime = true;
 
 //BINANCE API
 config.apiKey = process.env.BOT_API;

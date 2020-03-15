@@ -1,5 +1,5 @@
 const ema = require('./../../indicators/ema');
-const sendMsg = require('./../../node/telegramBot');
+const { generateMsg } = require('./../../node/telegramBot');
 const { buy, sell } = require('./../../node/paperTrading.js');
 
 //  buy(paperTrading, actualCandle.close);
@@ -18,7 +18,8 @@ module.exports = {
 
         if(bot.enoughCandles){
             let buyValueUp = bot.actualCandle.ema6;
-            let buyValueDown = bot.actualCandle.ema21;
+            let buyValueMiddle = bot.actualCandle.ema21;
+            let buyValueDown = bot.actualCandle.ema50;
 
             let sellValueUp = bot.actualCandle.ema21;
             let sellValueDown = bot.actualCandle.ema6;
@@ -29,13 +30,16 @@ module.exports = {
             } 
 
             if(paperTrading.state === 'initial' || paperTrading.state === 'sell') {
-
-                if(bot.actualCandle.ema50 > bot.lookback[0].ema50 && buyValueUp > buyValueDown){
+                if( !(bot.actualCandle.ema50 > bot.lookback[0].ema50) ) {
+                    return;
+                }
+                if(bot.telegramAlert) generateMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close);
+                if(buyValueUp > buyValueMiddle && buyValueMiddle > buyValueDown){
                     console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
                     paperTrading.state = 'buy';
                     buy(paperTrading, bot.actualCandle.close);
-                    if(bot.tradingMode == 'realTime'){
-                        sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close);
+                    if(bot.telegramAlert){
+                        generateMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close);
                     }
                 }
             }
@@ -44,8 +48,8 @@ module.exports = {
                 paperTrading.state = 'sell';
                 let benefice = sell(paperTrading, bot.actualCandle.close); 
                 console.log("BENEFICIO: " + benefice + "\n");
-                if(bot.tradingMode == 'realTime'){
-                    sendMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close, benefice);
+                if(bot.telegramAlert){
+                    generateMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close, benefice);
                 }
             }
         }
