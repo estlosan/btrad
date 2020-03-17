@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd /home/esteban/Escritorio/trading/binanceBot/
+
+pm2 start node/run.js --name BTCUSDT -- BTCUSDT diaria-6-21-50 true
+pm2 start node/run.js --name ETHUSDT -- ETHUSDT diaria-6-21-50 true
+pm2 start node/run.js --name EOSUSDT -- EOSUSDT diaria-6-21-50 true
+pm2 start node/run.js --name ADAUSDT -- ADAUSDT diaria-6-21-50 true

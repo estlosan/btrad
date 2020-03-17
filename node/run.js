@@ -56,14 +56,18 @@ function calculateTime(timestamp){
 const init = async () => {
 
     try {
+        const coinMinValue = 15;
         const balances = await binance.balance();
+        let pairPrice = await binance.prices();
+        pairPrice = pairPrice[bot.pair];
         let coin = bot.pair.slice(0,3).toString();
-        if(balances[coin].available > 0.001) {
+        if(pairPrice * balances[coin].available > coinMinValue) {
             paperTrading.quantity = balances[coin].available;
             paperTrading.state = 'buy';
             paperTrading.money = 0;
         }
         console.log(`${coin} balance: ${balances[coin].available}`);
+        console.log(`${coin} actual value:  ${pairPrice * balances[coin].available}$`);
 
 
         // Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
@@ -112,7 +116,8 @@ const init = async () => {
             }
         }, {limit: candleLimit, endTime: timeUntillNow});
     } catch(error){
-        console.log("ERROR: " + error);
+        sendMsg(error);
+        console.log("ERROR: " + JSON.stringify(error));
     }
 }
 

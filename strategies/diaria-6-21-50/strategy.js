@@ -16,6 +16,8 @@ module.exports = {
         ema(bot, "ema21", 21);
         ema(bot, "ema50", 50);
 
+        if(bot.telegramAlert) generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
+
         if(bot.enoughCandles){
             let buyValueUp = bot.actualCandle.ema6;
             let buyValueMiddle = bot.actualCandle.ema21;
@@ -33,7 +35,6 @@ module.exports = {
                 if( !(bot.actualCandle.ema50 > bot.lookback[0].ema50) ) {
                     return;
                 }
-                if(bot.telegramAlert) generateMsg(bot.pair, bot.actualCandle.time, paperTrading.state, bot.actualCandle.close);
                 if(buyValueUp > buyValueMiddle && buyValueMiddle > buyValueDown){
                     console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
                     paperTrading.state = 'buy';
