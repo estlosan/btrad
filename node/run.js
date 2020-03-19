@@ -2,6 +2,11 @@
 const { sendMsg } = require('./../node/telegramBot');
 const config = require('./../config.js');
 const path = require('path');
+if (typeof localStorage === "undefined" || localStorage === null) {
+    var LocalStorage = require('node-localstorage').LocalStorage;
+    localStorage = new LocalStorage('./scratch');
+}
+   
 
 // BOT
 
@@ -12,6 +17,10 @@ bot.lookback = [];
 bot.pair = process.argv[2] || config.pair;
 bot.realTime = process.argv[4] || config.realTime;
 
+bot.tradingMoney = process.argv[5] || config.tradingMoney;
+bot.money = bot.tradingMoney;     //quantity*price=money
+bot.quantity = 0;
+bot.state = 'initial';
 
 // INITIAL CONFIG
 
@@ -21,13 +30,6 @@ const strategyName = process.argv[3] || config.strategyName
 const candleLimit = config.candleLimit;
 const minCandles = config.minCandles;
 const strategyData = require(path.resolve(__dirname, `./../strategies/${strategyName}/strategy.js`))
-
-//PaperTrading
-let paperTrading = {};
-paperTrading.initialMoney = 1000;
-paperTrading.money = 1000;     //quantity*price=money
-paperTrading.quantity = 0;
-paperTrading.state = 'initial';
 
 
 // BINANCE API
@@ -56,20 +58,6 @@ function calculateTime(timestamp){
 const init = async () => {
 
     try {
-        const coinMinValue = 15;
-        const balances = await binance.balance();
-        let pairPrice = await binance.prices();
-        pairPrice = pairPrice[bot.pair];
-        let coin = bot.pair.slice(0,3).toString();
-        if(pairPrice * balances[coin].available > coinMinValue) {
-            paperTrading.quantity = balances[coin].available;
-            paperTrading.state = 'buy';
-            paperTrading.money = 0;
-        }
-        console.log(`${coin} balance: ${balances[coin].available}`);
-        console.log(`${coin} actual value:  ${pairPrice * balances[coin].available}$`);
-
-
         // Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
         binance.candlesticks(bot.pair, interval, (error, ticks, symbol) => {
             ticks.pop(); // Eliminamos el valor actual
@@ -84,13 +72,18 @@ const init = async () => {
                     close: parseFloat(close),
                     volume: parseFloat(volume),
                 }
-                strategyData.onCandle(bot, paperTrading)
+                strategyData.onCandle(bot)
                 bot.lookback.unshift(bot.actualCandle);
             }
 
             if(bot.realTime){
-                bot.telegramAlert = true;
-                paperTrading.state = 'initial';
+                
+                bot.realTrading = true;
+                bot.tradingMoney = process.argv[5] || config.tradingMoney;
+                bot.money = localStorage.getItem(`${bot.pair}_moneyForBuy`) || bot.tradingMoney;     //quantity*price=money
+                bot.quantity = localStorage.getItem(`${bot.pair}_tokensToSell`) || 0;
+                bot.state = localStorage.getItem(`${bot.pair}_state`) || 'initial';
+                
                 binance.websockets.candlesticks([bot.pair], interval, (candlesticks) => {
                     let { e:eventType, E:eventTime, s:symbol, k:ticks } = candlesticks;
                     let { o:open, h:high, l:low, c:close, v:volume, n:trades, i:interval, x:isFinal, q:quoteVolume, V:buyVolume, Q:quoteBuyVolume } = ticks;
@@ -105,12 +98,12 @@ const init = async () => {
                     if (isFinal) {
                         console.log(`\n > New Candle ${bot.actualCandle.time}`);
                         bot.lookback.pop();
-                        strategyData.onCandle(bot, paperTrading);
+                        strategyData.onCandle(bot);
                         bot.lookback.unshift(bot.actualCandle);
                     }
                     else{
                     // Strategy
-                        strategyData.onRealTime(bot, paperTrading);
+                        strategyData.onRealTime(bot);
                     }
                 });
             }

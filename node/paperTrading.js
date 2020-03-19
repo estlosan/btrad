@@ -1,16 +1,16 @@
 
 module.exports = {
 
-    buy: function(paperTrading, actualPrice) {
-        paperTrading.quantity = paperTrading.money / actualPrice;
-        paperTrading.money = 0;
+    buy: function(bot) {
+        bot.quantity = bot.money / bot.actualCandle.close;
+        bot.money = 0;
     },
 
-    sell: function(paperTrading, actualPrice) {
-        paperTrading.money = paperTrading.quantity * actualPrice;
-        quantity = 0;
-        let benefice = paperTrading.money - paperTrading.initialMoney;
-        return (benefice * 100) / paperTrading.initialMoney;
+    sell: function(bot) {
+        bot.money = bot.quantity * bot.actualCandle.close;
+        bot.quantity = 0;
+        let benefice = bot.money - bot.tradingMoney;
+        return (benefice * 100) / bot.tradingMoney;
     }
 }
 

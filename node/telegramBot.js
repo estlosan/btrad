@@ -16,6 +16,7 @@ const sell = "\u{1F4C9}"
 const bot = new TelegramBot(token);
 
 const sendMsg = (chatId, msg) => {
+    chatId = chatId || chatIdDev;
     bot.sendMessage(chatId, msg, { parse_mode: 'HTML' });
 }
 

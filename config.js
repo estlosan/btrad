@@ -18,5 +18,6 @@ config.realTime = true;
 config.apiKey = process.env.BOT_API;
 config.apiSecret = process.env.BOT_APIKEY;
 
+config.tradingMoney = 1;
 
 module.exports = config;
