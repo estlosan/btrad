@@ -5,6 +5,7 @@ const token = process.env.TELEGRAM_TOKEN;
 
 const chatIdPro = '-459860475'; // Pro
 const chatIdDev = '-402612640'; // Test
+const chatIdError = '-307261607'; // Error
 
 const timeEmoji = "\u{1F55C}";
 const money = "\u{1F4B8}";

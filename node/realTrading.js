@@ -1,9 +1,21 @@
 const config = require('./../config.js');
+const { sendMsg } = require('./telegramBot');
+const retry = require('retry');
 
 if (typeof localStorage === "undefined" || localStorage === null) {
     var LocalStorage = require('node-localstorage').LocalStorage;
     localStorage = new LocalStorage('./scratch');
 }
+
+const chatIdError = '-307261607'; // Error
+
+let operation = retry.operation({
+    retries: 2,
+    factor: 1,
+    minTimeout: 60 * 1000,
+    maxTimeout: 60 * 1000,
+    randomize: true,
+});
 
 // BINANCE API
 
@@ -16,14 +28,20 @@ const binance = require('node-binance-api')().options({
 module.exports = {
 
     realBuy: function(bot) {
-        bot.quantity = bot.money / bot.actualCandle.close;
-        bot.money = 0;
+        let errorMsg = "";
+
+        binance.marketBuy(`${bot.pair}`, bot.quantity);
+        localStorage.setItem(`${bot.pair}_state`, "buy")
+        localStorage.setItem(`${bot.pair}_tokensToSell`, `${bot.quantity}`)
+        localStorage.setItem(`${bot.pair}_moneyToBuy`, 0)
     },
 
     realSell: function(bot) {
-        bot.money = bot.quantity * bot.actualCandle.close;
-        quantity = 0;
-        let benefice = bot.money - bot.tradingMoney;
-        return (benefice * 100) / bot.tradingMoney;
+        let errorMsg = "";
+
+        binance.marketSell(`${bot.pair}`, bot.quantity);
+        localStorage.setItem(`${bot.pair}_state`, "sell")
+        localStorage.setItem(`${bot.pair}_moneyToBuy`, `${bot.money}`)
+        localStorage.setItem(`${bot.pair}_tokensToSell`, 0)
     }
 }

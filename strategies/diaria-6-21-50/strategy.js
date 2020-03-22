@@ -41,8 +41,7 @@ module.exports = {
                     bot.state = 'buy';
                     buy(bot);
                     if(bot.realTrading){
-                        realBuy()
-                        generateMsg(bot.pair, bot.actualCandle.time, bot.state, bot.actualCandle.close);
+                        realBuy(bot)
                     }
                 }
             }
@@ -52,8 +51,7 @@ module.exports = {
                 let benefice = sell(bot); 
                 console.log("BENEFICIO: " + benefice + "\n");
                 if(bot.realTrading){
-                    realSell()
-                    generateMsg(bot.pair, bot.actualCandle.time, bot.state, bot.actualCandle.close, benefice);
+                    realSell(bot, benefice)
                 }
             }
         }

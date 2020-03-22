@@ -83,7 +83,6 @@ const init = async () => {
                 bot.money = localStorage.getItem(`${bot.pair}_moneyForBuy`) || bot.tradingMoney;     //quantity*price=money
                 bot.quantity = localStorage.getItem(`${bot.pair}_tokensToSell`) || 0;
                 bot.state = localStorage.getItem(`${bot.pair}_state`) || 'initial';
-                
                 binance.websockets.candlesticks([bot.pair], interval, (candlesticks) => {
                     let { e:eventType, E:eventTime, s:symbol, k:ticks } = candlesticks;
                     let { o:open, h:high, l:low, c:close, v:volume, n:trades, i:interval, x:isFinal, q:quoteVolume, V:buyVolume, Q:quoteBuyVolume } = ticks;
@@ -109,7 +108,7 @@ const init = async () => {
             }
         }, {limit: candleLimit, endTime: timeUntillNow});
     } catch(error){
-        sendMsg(error);
+        sendMsg('-402612640', error);
         console.log("ERROR: " + JSON.stringify(error));
     }
 }
