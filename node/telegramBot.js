@@ -21,12 +21,12 @@ const sendMsg = (chatId, msg) => {
     bot.sendMessage(chatId, msg, { parse_mode: 'HTML' });
 }
 
-const generateMsg = (asset, time, type, price, benefice) => {
+const generateMsg = (asset, time, type, orderStatus, price, benefice) => {
     if(type.includes("buy") || type.includes("initial")){
-        sendMsg(chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${buy} <b>COMPRA:</b> ${price}${coin}\n`);
+        sendMsg(chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${buy} <b>COMPRA:</b> ${price}${coin} \n <b>ORDER STATUS:</b> ${orderStatus}\n`);
     }
     else if (type.includes("sell")){
-        sendMsg(chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${sell} <b>VENTA:</b> ${price}${coin}\n <b>BENEFICIO:</b> ${benefice.toFixed(4)}%`);
+        sendMsg(chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${sell} <b>VENTA:</b> ${price}${coin}\n <b>BENEFICIO:</b> ${benefice.toFixed(4)}% \n <b>ORDER STATUS:</b> ${orderStatus}`);
     }
     sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ONLINE \n`);
 }

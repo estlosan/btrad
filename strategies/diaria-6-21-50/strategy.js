@@ -20,6 +20,12 @@ module.exports = {
         if(bot.realTrading) generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
 
         if(bot.enoughCandles){
+            console.log("\nActual Value: " + bot.actualCandle.close)
+            console.log("Bot status: " + bot.state)
+            console.log("EMA 6: " + bot.actualCandle.ema6)
+            console.log("EMA 21: " + bot.actualCandle.ema21)
+            console.log("EMA 50: " + bot.actualCandle.ema50 + "\n")
+
             let buyValueUp = bot.actualCandle.ema6;
             let buyValueMiddle = bot.actualCandle.ema21;
             let buyValueDown = bot.actualCandle.ema50;
@@ -38,20 +44,24 @@ module.exports = {
                 }
                 if(buyValueUp > buyValueMiddle && buyValueMiddle > buyValueDown){
                     console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
-                    bot.state = 'buy';
-                    buy(bot);
                     if(bot.realTrading){
                         realBuy(bot)
+                    } 
+                    else {
+                        bot.state = 'buy';
+                        buy(bot);
                     }
                 }
             }
             else if(bot.state === 'buy' && sellValueUp > sellValueDown){
                 console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
-                bot.state = 'sell';
-                let benefice = sell(bot); 
-                console.log("BENEFICIO: " + benefice + "\n");
                 if(bot.realTrading){
-                    realSell(bot, benefice)
+                    realSell(bot)
+                }
+                else {
+                    bot.state = 'sell';
+                    let benefice = sell(bot); 
+                    console.log("BENEFICIO: " + benefice + "\n");
                 }
             }
         }

@@ -1,4 +1,4 @@
-// node run.js BTCUSDT strategyName true
+// node run.js BTCUSDT strategyName true 1
 const { sendMsg } = require('./../node/telegramBot');
 const config = require('./../config.js');
 const path = require('path');
@@ -55,6 +55,25 @@ function calculateTime(timestamp){
     return timeInDate;
 }
 
+const calculateMinQuantity = async () => {
+    try {
+        let data = await binance.exchangeInfo(); 
+        for(let i = 0; i < data.symbols.length; i++){
+            if(data.symbols[i].symbol === bot.pair){
+                let filters = data.symbols[i].filters
+                for ( let filter of filters ) {
+                    if ( filter.filterType == "LOT_SIZE" ) {
+                        return filter.minQty.replace('.','').indexOf('1')
+                    }
+                }
+            }
+        }
+    } catch(error){
+        console.log(error)
+    }
+    
+}
+
 const init = async () => {
 
     try {
@@ -80,9 +99,15 @@ const init = async () => {
                 
                 bot.realTrading = true;
                 bot.tradingMoney = process.argv[5] || config.tradingMoney;
-                bot.money = localStorage.getItem(`${bot.pair}_moneyForBuy`) || bot.tradingMoney;     //quantity*price=money
+                bot.money = localStorage.getItem(`${bot.pair}_moneyToBuy`) || bot.tradingMoney;     //quantity*price=money
                 bot.quantity = localStorage.getItem(`${bot.pair}_tokensToSell`) || 0;
                 bot.state = localStorage.getItem(`${bot.pair}_state`) || 'initial';
+                
+                console.log("Starting real trading bot with: \n")
+                console.log(`Money: ${bot.money}`)
+                console.log(`Quantity: ${bot.quantity}`)
+                console.log(`State: ${bot.state}`)
+
                 binance.websockets.candlesticks([bot.pair], interval, (candlesticks) => {
                     let { e:eventType, E:eventTime, s:symbol, k:ticks } = candlesticks;
                     let { o:open, h:high, l:low, c:close, v:volume, n:trades, i:interval, x:isFinal, q:quoteVolume, V:buyVolume, Q:quoteBuyVolume } = ticks;
@@ -95,10 +120,16 @@ const init = async () => {
                         volume: parseFloat(volume),
                     }
                     if (isFinal) {
+                        console.log("\n");
                         console.log(`\n > New Candle ${bot.actualCandle.time}`);
-                        bot.lookback.pop();
-                        strategyData.onCandle(bot);
-                        bot.lookback.unshift(bot.actualCandle);
+                        calculateMinQuantity()
+                        .then((result) => {
+                            bot.minQty = result;
+                            console.log(bot.minQty)
+                            bot.lookback.pop();
+                            strategyData.onCandle(bot);
+                            bot.lookback.unshift(bot.actualCandle);    
+                        })
                     }
                     else{
                     // Strategy
