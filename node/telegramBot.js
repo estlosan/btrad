@@ -28,7 +28,12 @@ const generateMsg = (asset, time, type, orderStatus, price, benefice) => {
     else if (type.includes("sell")){
         sendMsg(chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${sell} <b>VENTA:</b> ${price}${coin}\n <b>BENEFICIO:</b> ${benefice.toFixed(4)}% \n <b>ORDER STATUS:</b> ${orderStatus}`);
     }
-    sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ONLINE \n`);
+    else if(type.includes("preOrder")){
+        sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n <b>NEW ORDER</b> \n`);
+    }
+    else if (type.includes("Info")){
+        sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ONLINE \n`);
+    }
 }
 
 module.exports = { generateMsg, sendMsg };

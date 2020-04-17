@@ -45,6 +45,7 @@ module.exports = {
                 if(buyValueUp > buyValueMiddle && buyValueMiddle > buyValueDown){
                     console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
                     if(bot.realTrading){
+                        generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);
                         realBuy(bot)
                     } 
                     else {
@@ -56,6 +57,7 @@ module.exports = {
             else if(bot.state === 'buy' && sellValueUp > sellValueDown){
                 console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
                 if(bot.realTrading){
+                    generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);
                     realSell(bot)
                 }
                 else {
