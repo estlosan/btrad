@@ -7,7 +7,7 @@ let bot = {};
 let paperTrading = {}
 //CODE
 
-let strategyData = require(path.resolve(__dirname, `./../strategies/rsi14Test/strategy.js`))
+let strategyData = require(path.resolve(__dirname, `./../strategies/ema50-wma200/strategy.js`))
 
 
 bot.actualCandle = undefined;
@@ -83,11 +83,13 @@ candleClose1 = [0.0019685 ,0.0019674 ,0.0019667 ,0.001969 ,0.0019678 ,0.0019671 
     0.0019634 ,0.0019643 ,0.0019616 ,0.0019641 ,0.0019658 ,0.0019647 ,0.0019658 ,0.0019646 ,0.0019649 ,0.0019664 ,
     0.0019656 ,0.001964] //El primero es el más antiguo
 
-for (let i = 0; i < candleClose1.length; i++){
-    if(i === 12) bot.enoughCandles = true;
+candleClose2 = [7738.89, 8778.57, 8620, 8826.96, 8972.05];
+
+for (let i = 0; i < candleClose2.length; i++){
+    if(i === 0) bot.enoughCandles = true;
     bot.actualCandle = {
         time: 12,
-        close: parseFloat(candleClose1[i]),
+        close: parseFloat(candleClose2[i]),
     }
     strategyData.onCandle(bot)
     bot.lookback.unshift(bot.actualCandle);
