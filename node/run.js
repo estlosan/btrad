@@ -104,6 +104,7 @@ const init = async () => {
                 bot.state = localStorage.getItem(`${bot.pair}_state`) || 'initial';
                 
                 console.log("Starting real trading bot with: \n")
+                console.log(`Strategy: ${bot.strategyName}`)
                 console.log(`Money: ${bot.money}`)
                 console.log(`Quantity: ${bot.quantity}`)
                 console.log(`State: ${bot.state}`)

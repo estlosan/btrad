@@ -6,11 +6,14 @@ let config = {};
 config.pair = "BTCUSDT";
 
 // Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
-config.interval = "5m";
+config.interval = "1d";
 
-config.minCandles = 150;
-config.candleLimit = 365 + config.minCandles + 1; //Obtiene la actual y la borramos (Velas + Aditivo + Pop)
-config.strategyName = "scalpingMacd";
+config.minCandles = 100;
+config.candleLimit = 350 + config.minCandles + 1; //Obtiene la actual y la borramos (Velas + Aditivo + Pop)
+config.strategyName = "ema6-12-200";
+//config.date = new Date(Date.UTC('2020','04','19','18','51','00'));
+
+config.csvFile = 'BTCUSDT_5min.csv'
 
 config.realTime = false;
 

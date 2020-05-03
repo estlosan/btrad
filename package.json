@@ -9,10 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "csv-parser": "^2.3.2",
     "dotenv": "^8.2.0",
     "node-binance-api": "^0.10.4",
     "node-localstorage": "^2.1.5",
     "node-telegram-bot-api": "^0.40.0",
+    "objects-to-csv": "^1.3.6",
     "retry": "^0.12.0"
   }
 }
