@@ -14,37 +14,29 @@ module.exports = {
     },
 
     onCandle: function(bot) {
-        ema(bot, "ema50", 50);
-        wma(bot, "wma5", 5);
+        ema(bot, "ema21", 21);
+        ema(bot, "ema80", 80);
+        wma(bot, "wma800", 800);
 
-        console.log(bot.actualCandle.wma5);
+
+        console.log("\nTIME: " + bot.actualCandle.time)
 
         if(bot.realTrading) generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
 
         if(bot.enoughCandles){
             console.log("\nActual Value: " + bot.actualCandle.close)
             console.log("Bot status: " + bot.state)
-            console.log("EMA 6: " + bot.actualCandle.ema6)
             console.log("EMA 21: " + bot.actualCandle.ema21)
-            console.log("EMA 50: " + bot.actualCandle.ema50 + "\n")
-
-            let buyValueUp = bot.actualCandle.ema6;
-            let buyValueMiddle = bot.actualCandle.ema21;
-            let buyValueDown = bot.actualCandle.ema50;
-
-            let sellValueUp = bot.actualCandle.ema21;
-            let sellValueDown = bot.actualCandle.ema6;
+            console.log("EMA 80: " + bot.actualCandle.ema80)
+            console.log("WMA 800: " + bot.actualCandle.wma800 + "\n")
 
             // Histograma mayor que 0 y macd > signal  (1D)
-            if (!bot.lookback[0] || bot.lookback[0].ema50 == undefined){
+            if (!bot.lookback[0] || bot.lookback[0].wma800 == undefined){
                 return; 
             } 
 
             if(bot.state === 'initial' || bot.state === 'sell') {
-                if( !(bot.actualCandle.ema50 > bot.lookback[0].ema50) ) {
-                    return;
-                }
-                if(buyValueUp > buyValueMiddle && buyValueMiddle > buyValueDown){
+                if(bot.lookback[0].close < bot.lookback[0].wma800 && bot.actualCandle.close > bot.actualCandle.wma800){
                     console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
                     if(bot.realTrading){
                         generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);
@@ -56,7 +48,7 @@ module.exports = {
                     }
                 }
             }
-            else if(bot.state === 'buy' && sellValueUp > sellValueDown){
+            else if(bot.state === 'buy' && bot.actualCandle.ema21 < bot.actualCandle.ema80){
                 console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
                 if(bot.realTrading){
                     generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);

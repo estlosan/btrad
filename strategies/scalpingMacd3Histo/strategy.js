@@ -60,7 +60,7 @@ module.exports = {
                     }
                 }
             }
-            else if(bot.state === 'buy' && sellValueUp > sellValueDown){
+            else if(bot.state === 'buy' && bot.actualCandle.histogram < bot.lookback[0].histogram && bot.lookback[0].histogram < bot.lookback[1].histogram){
                 console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
                 if(bot.realTrading){
                     generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);

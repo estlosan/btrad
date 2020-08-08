@@ -63,7 +63,7 @@ function sleep(ms) {
 async function saveToCsv(data){
     const csv = new ObjectsToCsv(data);
     // Save to file:
-    await csv.toDisk('./BTCUSDT_1d.csv');
+    await csv.toDisk('./BTCUSDT_1min.csv');
 };
 
 const init = async () => {
@@ -98,7 +98,7 @@ const init = async () => {
     }
 
     //let timeToGet = config.date.getTime() || timeUntillNow; NOVA
-    let timeToGet = timeUntillNow; 
+    let timeToGet = timeUntillNow;  
 
     let intervalTime = interval.replace( /\D+/, '');
     let intervalType = interval.replace( /\d+/, '');
@@ -113,7 +113,7 @@ const init = async () => {
 
     let longTimeCandles = []
     try {
-        for (let i = 0; i < 18; i++){
+        for (let i = 0; i < 20; i++){
             console.log("PETITION")
             let ticks = await binance.candlesticks(bot.pair, interval , false, {limit: candleLimit, endTime: timeToGet});
             if (i == 0) ticks.pop(); // Eliminamos el valor actual
