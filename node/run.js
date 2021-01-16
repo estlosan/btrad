@@ -18,6 +18,10 @@ bot.pair = process.argv[2] || config.pair;
 bot.realTime = process.argv[4] || config.realTime;
 
 bot.tradingMoney = process.argv[5] || config.tradingMoney;
+
+bot.takeProfit = process.argv[6];
+bot.stopLoss = process.argv[7];
+
 bot.money = bot.tradingMoney;     //quantity*price=money
 bot.quantity = 0;
 bot.state = 'initial';
@@ -30,7 +34,6 @@ const strategyName = process.argv[3] || config.strategyName
 const candleLimit = config.candleLimit;
 const minCandles = config.minCandles;
 const strategyData = require(path.resolve(__dirname, `./../strategies/${strategyName}/strategy.js`))
-
 
 // BINANCE API
 
@@ -108,6 +111,8 @@ const init = async () => {
                 console.log(`Money: ${bot.money}`)
                 console.log(`Quantity: ${bot.quantity}`)
                 console.log(`State: ${bot.state}`)
+                console.log(`TakeProfit: ${bot.takeProfit}`)
+                console.log(`StopLoss: ${bot.stopLoss}`)
 
                 binance.websockets.candlesticks([bot.pair], interval, (candlesticks) => {
                     let { e:eventType, E:eventTime, s:symbol, k:ticks } = candlesticks;

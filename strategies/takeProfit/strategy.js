@@ -1,5 +1,4 @@
 const ema = require('./../../indicators/ema');
-const macd = require('./../../indicators/macd');
 const { generateMsg } = require('./../../node/telegramBot');
 const { buy, sell } = require('./../../node/paperTrading.js');
 const { realBuy, realSell } = require('./../../node/realTrading');
@@ -10,45 +9,51 @@ const { realBuy, realSell } = require('./../../node/realTrading');
 module.exports = {
 
     onRealTime: function(bot) {
+        if(bot.actualCandle.close < bot.stopLoss){
+            if(bot.realTrading){
+                generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);
+                realSell(bot)
+            }
+        }
+        else if (bot.actualCandle.close >= bot.takeProfit){
+            if(bot.realTrading) generateMsg(bot.pair, bot.actualCandle.time, "takeProfit", bot.actualCandle.close);
+            bot.stopLoss = bot.actualCandle.close * 0.90;
+            bot.takeProfit = bot.takeProfit * 1.01;
+        }
     
     },
 
     onCandle: function(bot) {
-        ema(bot, "ema9", 9);
-        ema(bot, "ema12", 12);
-        ema(bot, "ema26", 26);
+        ema(bot, "ema6", 6);
+        ema(bot, "ema21", 21);
+        ema(bot, "ema50", 50);
 
-        macd(bot)
-
-        console.log(`\nTIME: ${bot.actualCandle.time}`);
         if(bot.realTrading) generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
 
         if(bot.enoughCandles){
             console.log("\nActual Value: " + bot.actualCandle.close)
             console.log("Bot status: " + bot.state)
-            console.log("MACD: " + bot.actualCandle.macd)
-            console.log("Signal: " + bot.actualCandle.signal)
+            console.log("EMA 6: " + bot.actualCandle.ema6)
+            console.log("EMA 21: " + bot.actualCandle.ema21)
+            console.log("EMA 50: " + bot.actualCandle.ema50 + "\n")
 
-            let buyValueUp = bot.actualCandle.macd;
-            let buyValueDown = bot.actualCandle.signal;
+            let buyValueUp = bot.actualCandle.ema6;
+            let buyValueMiddle = bot.actualCandle.ema21;
+            let buyValueDown = bot.actualCandle.ema50;
 
-            let sellValueUp = bot.actualCandle.signal;
-            let sellValueDown = bot.actualCandle.macd;
-
-            let overZero = false;
+            let sellValueUp = bot.actualCandle.ema21;
+            let sellValueDown = bot.actualCandle.ema6;
 
             // Histograma mayor que 0 y macd > signal  (1D)
-            if (!bot.lookback[0] || bot.lookback[0].ema26 == undefined){
+            if (!bot.lookback[0] || bot.lookback[0].ema50 == undefined){
                 return; 
             } 
 
-            if (buyValueUp > 0 && buyValueDown > 0) overZero = true;
-
             if(bot.state === 'initial' || bot.state === 'sell') {
-                if (!overZero){
+                if( !(bot.actualCandle.ema50 > bot.lookback[0].ema50) ) {
                     return;
                 }
-                if(buyValueUp > buyValueDown && bot.lookback[0].macd < bot.lookback[0].signal){
+                if(buyValueUp > buyValueMiddle && buyValueMiddle > buyValueDown){
                     console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
                     if(bot.realTrading){
                         generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);

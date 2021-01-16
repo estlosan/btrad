@@ -10,7 +10,7 @@ config.interval = "1d";
 
 config.minCandles = 100;
 config.candleLimit = 350 + config.minCandles + 1; //Obtiene la actual y la borramos (Velas + Aditivo + Pop)
-config.strategyName = "ema50-wma200";
+config.strategyName = "takeProfit";
 //config.date = new Date(Date.UTC('2020','04','19','18','51','00'));
 
 config.csvFile = 'BTCUSDT_1min.csv'

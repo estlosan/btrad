@@ -34,6 +34,9 @@ const generateMsg = (asset, time, type, orderStatus, price, benefice) => {
     else if (type.includes("Info")){
         sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ONLINE \n`);
     }
+    else if (type.includes("takeProfit")){
+        sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n TakeProfit updated \n`);
+    }
 }
 
 module.exports = { generateMsg, sendMsg };
