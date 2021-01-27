@@ -13,6 +13,7 @@ if (typeof localStorage === "undefined" || localStorage === null) {
 let bot = {};
 
 bot.actualCandle = undefined;
+bot.period = {}
 bot.lookback = [];
 bot.pair = process.argv[2] || config.pair;
 bot.realTime = process.argv[4] || config.realTime;
@@ -97,6 +98,9 @@ const init = async () => {
                 strategyData.onCandle(bot)
                 bot.lookback.unshift(bot.actualCandle);
             }
+
+            console.log("_______________________________BOT___________________________")
+            console.log(JSON.stringify(bot))
 
             if(bot.realTime){
                 
