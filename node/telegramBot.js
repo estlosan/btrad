@@ -1,4 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
+const { realTime } = require('./../config.js');
 require('dotenv').config()
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TELEGRAM_TOKEN;
@@ -17,8 +18,14 @@ const sell = "\u{1F4C9}"
 const bot = new TelegramBot(token);
 
 const sendMsg = (chatId, msg) => {
-    chatId = chatId || chatIdDev;
-    bot.sendMessage(chatId, msg, { parse_mode: 'HTML' });
+    if(!realTime) {
+        console.log(msg)
+    }
+    else {
+        chatId = chatId || chatIdDev;
+        bot.sendMessage(chatId, msg, { parse_mode: 'HTML' });
+    }
+    
 }
 
 const generateMsg = (asset, time, type, orderStatus, price, benefice) => {
