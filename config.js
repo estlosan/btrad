@@ -3,24 +3,28 @@ dotenv.config();
 
 let config = {};
 
-config.pair = "BTCUSDT";
+config.pair = process.argv[2] || "BTCUSDT";
 
 // Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
-config.interval = "30m";
+//config.interval = ["1m", "3m", "5m", "15m", "30m", "1h", "4h", "1d"];
+config.interval = ["1m", "3m", "5m", "15m", "30m", "1h", "4h", "1d"];
 
-config.minCandles = 10;
-config.candleLimit = 5 + config.minCandles + 1; //Obtiene la actual y la borramos (Velas + Aditivo + Pop)
+config.minCandles = 100; // Velas necesarias para ejecutar la estrategia
+config.candleLimit = 450 // Velas por peticion a binance
 config.strategyName = "heikinAshi";
 //config.date = new Date(Date.UTC('2020','04','19','18','51','00'));
+config.fromDate = 1546297200000;
+config.toDate = 1577833200000;
 
-config.csvFile = 'BTCUSDT_1min.csv'
-
-config.realTime = false;
+config.realTime = process.argv[4] || false;
 
 //BINANCE API
 config.apiKey = process.env.BOT_API;
 config.apiSecret = process.env.BOT_APIKEY;
 
-config.tradingMoney = 1;
+config.tradingMoney = process.argv[5] || 1;
+
+config.takeProfit = 1;
+config.stopLoss = 2;
 
 module.exports = config;

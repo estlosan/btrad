@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^3.3.0",
     "csv-parser": "^2.3.2",
     "dotenv": "^8.2.0",
     "node-binance-api": "^0.10.4",

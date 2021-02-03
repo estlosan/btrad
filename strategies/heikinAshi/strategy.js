@@ -1,7 +1,7 @@
 const heikinAshi = require('./../../indicators/heikinAshi.js');
+const rsi_heikin = require('./../../indicators/rsi_heikin.js')
 const { generateMsg } = require('./../../node/telegramBot');
-const { buy, sell } = require('./../../node/paperTrading.js');
-const { realBuy, realSell } = require('./../../node/realTrading');
+const { buy, sell } = require('./../../node/trading');
 
 //  buy(paperTrading, actualCandle.close);
 //  sell(paperTrading, actualCandle.close);
@@ -14,44 +14,25 @@ module.exports = {
 
     onCandle: function(bot) {
         heikinAshi(bot, 'heikinAshi');
+        rsi_heikin(bot, "rsi_heikin", 14);
 
-        if(bot.realTrading) generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
+        generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
 
         if(bot.enoughCandles){
 
-            // Histograma mayor que 0 y macd > signal  (1D)
-            if (!bot.lookback[0] || bot.lookback[0].ema50 == undefined){
-                return; 
-            } 
-
-            if(bot.state === 'initial' || bot.state === 'sell') {
-                if( !(bot.actualCandle.ema50 > bot.lookback[0].ema50) ) {
-                    return;
-                }
-                if(buyValueUp > buyValueMiddle && buyValueMiddle > buyValueDown){
-                    console.log(`\nTIME: ${bot.actualCandle.time} ------ COMPRA \n`);
-                    if(bot.realTrading){
-                        generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);
-                        realBuy(bot)
-                    } 
-                    else {
-                        bot.state = 'buy';
-                        buy(bot);
-                    }
+            let percentage = bot.buyPrice != 0 ? ((bot.actualCandle.close - bot.buyPrice) / bot.buyPrice) * 100 : 0
+            if(percentage >= bot.takeProfit || percentage <= bot.stopLoss ){
+                sell(bot)
+            }
+            else if(bot.lookback[0].rsi_heikin < 50 && bot.actualCandle.rsi_heikin >= 50){
+                if(
+                    bot.lookback[0].heikinAshi.close > bot.lookback[0].heikinAshi.open &&
+                    bot.lookback[1].heikinAshi.close > bot.lookback[1].heikinAshi.open
+                ) {
+                    buy(bot);
                 }
             }
-            else if(bot.state === 'buy' && sellValueUp > sellValueDown){
-                console.log(`\nTIME: ${bot.actualCandle.time} ------ VENTA`);
-                if(bot.realTrading){
-                    generateMsg(bot.pair, bot.actualCandle.time, "preOrder", bot.actualCandle.close);
-                    realSell(bot)
-                }
-                else {
-                    bot.state = 'sell';
-                    let benefice = sell(bot); 
-                    console.log("BENEFICIO: " + benefice + "\n");
-                }
-            }
+            
         }
     } 
 }

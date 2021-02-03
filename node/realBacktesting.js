@@ -1,9 +1,9 @@
 const { loadConfig, initBot, getCandleHistory, calculateTime } = require('./helpers.js')
 const ObjectsToCsv = require('objects-to-csv');
 const csv = require('csv-parser')
-const fs = require('fs')
+const fs = require('fs');
 
-const CSV_ROUTE = "/backtest/"
+const CSV_ROUTE = "/backtest/1Ene2019_1Ene2020/"
 
 function sleep(ms) {
     return new Promise((resolve) => {
@@ -18,44 +18,67 @@ const saveToCSV = async (data, csvFile) => {
     await csv.toDisk(csvFile);
 };
 
-const binanceBacktestToCSV = async (pair, interval, candleLimit, timeUntillNow, csvFile) => {
-    let timeToGet = timeUntillNow; 
+const binanceBacktestToCSV = async (pair, interval, fromDate, toDate, candleLimit, csvFile) => {
 
-    let intervalTime = interval.replace( /\D+/, '');
-    let intervalType = interval.replace( /\d+/, '');
-    let intervalNumber;
-    if(intervalType === 'm'){
-        intervalNumber = 60;
-    } else if (intervalType === 'h'){
-        intervalNumber = 3600;
-    } else if (intervalType === 'd'){
-        intervalNumber = 86400;
-    }
+    try {
+        let timeToGet = toDate; 
 
-    let longTimeCandles = []
-    for (let i = 0; i < 3; i++){
-        console.log(`\t Calling Binance History`)
-        let ticks = await getCandleHistory(pair, interval, candleLimit, timeToGet);
-        if (i == 0) ticks.pop(); // Eliminamos el valor actual
-        longTimeCandles.unshift(...ticks)
-        timeToGet -= candleLimit * (intervalNumber * intervalTime) * 1000; // Candles + 1 * (60 * time) * 1000
-        await sleep(3000);
-    }
-
-    let lookback = []
-    for (let i = 0; i < longTimeCandles.length; i++) {
-        let [time, open, high, low, close, volume, closeTime, assetVolume, trades, buyBaseVolume, buyAssetVolume, ignored] = longTimeCandles[i];
-        let actualCandle = {
-            time: calculateTime(time),
-            open: parseFloat(open),
-            high: parseFloat(high),
-            low: parseFloat(low),
-            close: parseFloat(close),
-            volume: parseFloat(volume),
+        let intervalTime = interval.replace( /\D+/, '');
+        let intervalType = interval.replace( /\d+/, '');
+        let intervalNumber;
+        if(intervalType === 'm'){
+            intervalNumber = intervalTime * 60;
+        } else if (intervalType === 'h'){
+            intervalNumber = intervalTime * 3600;
+        } else if (intervalType === 'd'){
+            intervalNumber = intervalTime * 86400;
         }
-        lookback.unshift(actualCandle);
+
+        let passedTime = (toDate - fromDate) / 1000; // Segundos que han pasado
+
+        let candles = Math.ceil(passedTime / intervalNumber) // Velas totales necesarias
+
+        let aproxLoops = Math.ceil(candles / candleLimit);
+
+        let longTimeCandles = []
+        console.log(`\t Calling Binance History: ${calculateTime(fromDate)} to ${calculateTime(toDate)}`)
+        console.log(`\t Calling Binance History: ${pair} --> ${interval}`)
+        for (let i = 0; candles > 0; i++){
+            console.log(`\t Call: ${i + 1} of: ${aproxLoops}`)
+            if((candles - candleLimit) < 0){
+                let ticks = await getCandleHistory(pair, interval, candles, timeToGet);
+                if (i == 0) ticks.pop(); // Eliminamos el valor actual
+                longTimeCandles.unshift(...ticks)
+                break;
+            }
+            else{
+                let ticks = await getCandleHistory(pair, interval, candleLimit, timeToGet);
+                if (i == 0) ticks.pop(); // Eliminamos el valor actual
+                longTimeCandles.unshift(...ticks)
+                timeToGet -= candleLimit * (intervalNumber) * 1000; // Candles + 1 * (60 * time) * 1000
+            }
+            candles -= candleLimit;
+            await sleep(2000);
+        }
+
+        let lookback = []
+        for (let i = 0; i < longTimeCandles.length; i++) {
+            let [time, open, high, low, close, volume, closeTime, assetVolume, trades, buyBaseVolume, buyAssetVolume, ignored] = longTimeCandles[i];
+            let actualCandle = {
+                time: calculateTime(time),
+                open: parseFloat(open),
+                high: parseFloat(high),
+                low: parseFloat(low),
+                close: parseFloat(close),
+                volume: parseFloat(volume),
+            }
+            lookback.unshift(actualCandle);
+        }
+        await saveToCSV(lookback, csvFile)
+    } catch (error){
+        console.log("--------------ERROR BINANCE---------------")
+        console.log(error)
     }
-    await saveToCSV(lookback, csvFile)
 }
 
 const getBacktestCandlesCSV = (bot, csvFile, strategyData, minCandles) => {
@@ -84,6 +107,7 @@ const getBacktestCandlesCSV = (bot, csvFile, strategyData, minCandles) => {
                 }
                 resolve()
             }catch(error){
+                console.log("--------------ERROR CSV READ---------------")
                 console.log(error)
                 reject(error)
             }
@@ -93,10 +117,11 @@ const getBacktestCandlesCSV = (bot, csvFile, strategyData, minCandles) => {
 
 const init = async () => {
     let {
-        timeUntillNow,
+        fromDate,
+        toDate,
         interval,
-        candleLimit,
         minCandles,
+        candleLimit,
         strategyData
     } = loadConfig()
     let bot = initBot();
@@ -105,15 +130,17 @@ const init = async () => {
         for (const time of interval){
             let csvFile = __dirname + CSV_ROUTE + `${bot.pair}_${time}.csv`
             if (!fs.existsSync(csvFile)) {
-                await binanceBacktestToCSV(bot.pair, time, candleLimit, timeUntillNow, csvFile)
+                await binanceBacktestToCSV(bot.pair, time, fromDate, toDate, candleLimit, csvFile)
             } 
             await getBacktestCandlesCSV(bot, csvFile, strategyData, minCandles);
-            await sleep(3000)
+            console.log(`\t ${bot.pair}_${time}.csv --> Benefice: ${bot.benefice}`)
             results.push(bot.benefice)
             bot = initBot()
+            await sleep(5000)
         }
         console.log(`Benefice: ${results}`)
     } catch (err) {
+        console.log("--------------ERROR INIT---------------")
         console.log(err)
     }
 }

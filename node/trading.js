@@ -96,6 +96,9 @@ module.exports = {
             bot.prevMoney = bot.money
             bot.buyPrice = bot.actualCandle.close;
             bot.money = 0;
+            fs.appendFile('./trxInfo.txt', `${bot.actualCandle.time} ---> BUY\n`, function (err) {
+                if (err) console.log("Error writing trxInfo file");
+            });
         }
     },
 

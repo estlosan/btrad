@@ -3,21 +3,24 @@ const config = require('./../config.js');
 const binance = require('node-binance-api')().options({
     APIKEY: '<key>',
     APISECRET: '<secret>',
-    useServerTime: true // If you get timestamp errors, synchronize to server time at startup
+    useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
+    recvWindow: 60000,
 });
 
 const loadConfig = () => {
-    const timeUntillNow = Date.now();
+    const fromDate = config.fromDate || config.candleLimit;
+    const toDate = config.toDate || Date.now();
     const interval = config.interval;
     const strategyName = process.argv[3] || config.strategyName
-    const candleLimit = config.candleLimit;
     const minCandles = config.minCandles;
+    const candleLimit = config.candleLimit;
     const strategyData = require(path.resolve(__dirname, `./../strategies/${strategyName}/strategy.js`))
     return {
-        timeUntillNow,
+        fromDate,
+        toDate,
         interval,
-        candleLimit,
         minCandles,
+        candleLimit,
         strategyData
     }
 }

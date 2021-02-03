@@ -11,7 +11,9 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/node/backtesting.js"
+            "program": "${workspaceFolder}/node/realBacktesting.js",
+            "args": [
+            ]
         }
     ]
 }
