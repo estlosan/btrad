@@ -103,7 +103,7 @@ module.exports = {
     },
 
     sell: function(bot) {
-        if(bot.state == 'sell'){
+        if(bot.state == 'sell' || bot.state == 'initial'){
             return;
         }
         if(bot.realTime){
@@ -123,7 +123,7 @@ module.exports = {
                         return operation.retry(error);
                     }
                     if(response.status === 'FILLED'){
-                        bot.money = bot.quantity * bot.actualCandle.close;
+                        bot.money = (bot.quantity * bot.actualCandle.close) - (0.002 * bot.quantity * bot.actualCandle.close);
                         bot.quantity = 0;
                         bot.state = 'sell'
                         let benefice = bot.money - bot.tradingMoney;
@@ -171,15 +171,15 @@ module.exports = {
             bot.state = "sell"
             let beneficePercent = ((bot.actualCandle.close - bot.buyPrice) / bot.buyPrice) * 100;
             generateMsg(bot.pair, bot.actualCandle.time, bot.state, "FILLED", bot.actualCandle.close, beneficePercent);
-            bot.money = bot.quantity * bot.actualCandle.close;
+            bot.money = (bot.quantity * bot.actualCandle.close) - (0.002 * bot.quantity * bot.actualCandle.close);
             bot.quantity = 0;
             bot.buyPrice = 0;
             let trxBenefice = bot.money - bot.prevMoney;
-            let trxBeneficePerc = (trxBenefice * 100) / bot.prevMoney
+            let trxBeneficePerc = ((trxBenefice * 100) / bot.prevMoney);
             fs.appendFile('./trxInfo.txt', `${bot.actualCandle.time} Benefice: ${trxBeneficePerc}\n`, function (err) {
                 if (err) console.log("Error writing trxInfo file");
             });
-            bot.benefice += beneficePercent
+            bot.benefice += trxBeneficePerc
         }
     }
 }

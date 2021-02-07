@@ -15,13 +15,15 @@ const loadConfig = () => {
     const minCandles = config.minCandles;
     const candleLimit = config.candleLimit;
     const strategyData = require(path.resolve(__dirname, `./../strategies/${strategyName}/strategy.js`))
+    const csvRoute = config.csvRoute;
     return {
         fromDate,
         toDate,
         interval,
         minCandles,
         candleLimit,
-        strategyData
+        strategyData,
+        csvRoute
     }
 }
 
@@ -43,6 +45,7 @@ const initBot = () => {
     bot.stopLoss = - (process.argv[7] || config.stopLoss);
 
     bot.money = bot.tradingMoney;     //quantity*price=money
+    bot.prevMoney = 0;
     bot.quantity = 0;
     bot.state = 'initial';
 

@@ -3,8 +3,6 @@ const ObjectsToCsv = require('objects-to-csv');
 const csv = require('csv-parser')
 const fs = require('fs');
 
-const CSV_ROUTE = "/backtest/1Ene2019_1Ene2020/"
-
 function sleep(ms) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -43,19 +41,20 @@ const binanceBacktestToCSV = async (pair, interval, fromDate, toDate, candleLimi
         let longTimeCandles = []
         console.log(`\t Calling Binance History: ${calculateTime(fromDate)} to ${calculateTime(toDate)}`)
         console.log(`\t Calling Binance History: ${pair} --> ${interval}`)
+        console.log(`\t Total candles: ${candles - aproxLoops}`);
         for (let i = 0; candles > 0; i++){
             console.log(`\t Call: ${i + 1} of: ${aproxLoops}`)
             if((candles - candleLimit) < 0){
                 let ticks = await getCandleHistory(pair, interval, candles, timeToGet);
-                if (i == 0) ticks.pop(); // Eliminamos el valor actual
+                ticks.pop(); // Eliminamos el valor actual
                 longTimeCandles.unshift(...ticks)
                 break;
             }
             else{
                 let ticks = await getCandleHistory(pair, interval, candleLimit, timeToGet);
-                if (i == 0) ticks.pop(); // Eliminamos el valor actual
-                longTimeCandles.unshift(...ticks)
-                timeToGet -= candleLimit * (intervalNumber) * 1000; // Candles + 1 * (60 * time) * 1000
+                ticks.pop(); // Eliminamos el valor actual
+                longTimeCandles.unshift(...ticks);
+                timeToGet = ticks[0][0];
             }
             candles -= candleLimit;
             await sleep(2000);
@@ -122,23 +121,24 @@ const init = async () => {
         interval,
         minCandles,
         candleLimit,
-        strategyData
+        strategyData,
+        csvRoute
     } = loadConfig()
     let bot = initBot();
     try {
-        let results = []
+        let results = {};
         for (const time of interval){
-            let csvFile = __dirname + CSV_ROUTE + `${bot.pair}_${time}.csv`
+            let csvFile = __dirname + csvRoute + `${bot.pair}_${time}.csv`
             if (!fs.existsSync(csvFile)) {
                 await binanceBacktestToCSV(bot.pair, time, fromDate, toDate, candleLimit, csvFile)
             } 
             await getBacktestCandlesCSV(bot, csvFile, strategyData, minCandles);
             console.log(`\t ${bot.pair}_${time}.csv --> Benefice: ${bot.benefice}`)
-            results.push(bot.benefice)
+            results[time] = [bot.benefice, bot.prevMoney]
             bot = initBot()
             await sleep(5000)
         }
-        console.log(`Benefice: ${results}`)
+        console.log(`Benefice: ${JSON.stringify(results)}`)
     } catch (err) {
         console.log("--------------ERROR INIT---------------")
         console.log(err)

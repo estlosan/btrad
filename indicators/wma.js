@@ -8,9 +8,7 @@ module.exports = function wma (bot, key, length, source_key) {
         let WMA = auxLookback
             .slice(0, length)
             .reduce((sum, candle) => {
-                console.log("EE")
                 let result = sum + candle["close"] * counter;
-                console.log("EE")
                 lengthSum += counter;
                 counter --;
                 return result;
