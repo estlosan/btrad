@@ -29,9 +29,6 @@ module.exports = {
 
             generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
 
-            if (bot.actualCandle.time == '9 Feb 2018 9:0:0') {
-                console.log("Do")
-            }
             /* let percentage = bot.buyPrice != 0 ? ((bot.actualCandle.close - bot.buyPrice) / bot.buyPrice) * 100 : 0
             if(percentage >= bot.takeProfit || percentage <= bot.stopLoss ){
                 sell(bot)

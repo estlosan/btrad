@@ -9,15 +9,15 @@ config.pair = process.argv[2] || "BTCUSDT";
 //config.interval = ["1m", "3m", "5m", "15m", "30m", "1h", "4h", "1d"];
 config.interval = ["4h"];
 
-config.minCandles = 100; // Velas necesarias para ejecutar la estrategia
+config.minCandles = 145; // Velas necesarias para ejecutar la estrategia
 config.candleLimit = 400 // Velas por peticion a binance
-config.strategyName = "wma2";
+config.strategyName = "atr_trailing_stop(BUENA)";
 //config.csvRoute = "/backtest/1Ene2019_1Ene2020/"
-config.csvRoute = "/backtest/1Ene2018_1Ene2019/"
+config.csvRoute = "/backtest/test/"
 
 //config.date = new Date(Date.UTC('2020','04','19','18','51','00'));
-config.fromDate = 1546297200000;
-config.toDate = 1577833200000;
+config.fromDate = 1613370427000;
+config.toDate = 1613456827000;
 
 config.realTime = process.argv[4] || false;
 
