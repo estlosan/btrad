@@ -86,13 +86,14 @@ const getBacktestCandlesCSV = (bot, csvFile, strategyData, minCandles) => {
         fs.createReadStream(csvFile)
         .pipe(csv())
         .on('data', (data) => {
-            longTimeCandles.unshift(data)
+            longTimeCandles.push(data)
         })
         .on('end', () => {
             try{
-                for (let i = 0; i < longTimeCandles.length; i++) {
-                
-                    if(i === minCandles) bot.enoughCandles = true;
+                let count = 0;
+                for (let i = longTimeCandles.length - 1; i >= 0; i--) {
+                    
+                    if(count === minCandles) bot.enoughCandles = true;
                     bot.actualCandle = {
                         time: longTimeCandles[i].time,
                         open: parseFloat(longTimeCandles[i].open),
@@ -103,6 +104,10 @@ const getBacktestCandlesCSV = (bot, csvFile, strategyData, minCandles) => {
                     }
                     strategyData.onCandle(bot)
                     bot.lookback.unshift(bot.actualCandle);
+                    if(bot.lookback.length > 1500){
+                        bot.lookback.pop()
+                    }
+                    count ++;
                 }
                 resolve()
             }catch(error){
@@ -135,6 +140,7 @@ const init = async () => {
             await getBacktestCandlesCSV(bot, csvFile, strategyData, minCandles);
             console.log(`\t ${bot.pair}_${time}.csv --> Benefice: ${bot.benefice}`)
             results[time] = [bot.benefice, bot.prevMoney]
+            console.log(bot.lookback[0])
             bot = initBot()
             await sleep(5000)
         }
