@@ -4,6 +4,7 @@ const binance = require('node-binance-api')().options({
     APIKEY: '<key>',
     APISECRET: '<secret>',
     useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
+    reconnect: true,
     recvWindow: 60000,
 });
 
@@ -11,7 +12,7 @@ const loadConfig = () => {
     const fromDate = config.fromDate || config.candleLimit;
     const toDate = config.toDate || Date.now();
     const interval = config.interval;
-    const strategyName = process.argv[3] || config.strategyName
+    const strategyName = config.strategyName;
     const minCandles = config.minCandles;
     const candleLimit = config.candleLimit;
     const strategyData = require(path.resolve(__dirname, `./../strategies/${strategyName}/strategy.js`))
@@ -23,6 +24,7 @@ const loadConfig = () => {
         minCandles,
         candleLimit,
         strategyData,
+        strategyName,
         csvRoute
     }
 }
@@ -34,15 +36,15 @@ const initBot = () => {
     bot.period = {}
     bot.lookback = [];
     bot.pair = config.pair;
-    bot.realTime = config.realTime;
+    bot.realTrading = config.realTrading;
 
     bot.tradingMoney = config.tradingMoney;
 
     bot.benefice = 0;
 
     bot.buyPrice = 0;
-    bot.takeProfit = process.argv[6] || config.takeProfit;
-    bot.stopLoss = - (process.argv[7] || config.stopLoss);
+    bot.takeProfit = config.takeProfit;
+    bot.stopLoss = config.stopLoss;
 
     bot.money = bot.tradingMoney;     //quantity*price=money
     bot.prevMoney = 0;

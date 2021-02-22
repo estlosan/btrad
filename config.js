@@ -3,23 +3,26 @@ dotenv.config();
 
 let config = {};
 
-config.pair = process.argv[2] || "BTCUSDT";
+config.pair = process.argv[2] || "ADAUSDT";
 
 // Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
 //config.interval = ["1m", "3m", "5m", "15m", "30m", "1h", "4h", "1d"];
-config.interval = ["4h"];
+config.interval = ["1h", "4h", "1d"];
 
 config.minCandles = 145; // Velas necesarias para ejecutar la estrategia
 config.candleLimit = 400 // Velas por peticion a binance
-config.strategyName = "atr_trailing_stop(BUENA)";
+config.strategyName = process.argv[3] || "atr_trailing_stop_buena_ada";
 //config.csvRoute = "/backtest/1Ene2019_1Ene2020/"
-config.csvRoute = "/backtest/test/"
+config.csvRoute = "/backtest/1Oct2017_1Ene2021ADA/"
 
 //config.date = new Date(Date.UTC('2020','04','19','18','51','00'));
-config.fromDate = 1613370427000;
-config.toDate = 1613456827000;
+config.fromDate = 1506808800000;
+config.toDate = 1609455600000;
 
-config.realTime = process.argv[4] || false;
+//config.fromDate = 1506808800000;
+//config.toDate = 1609455600000;
+
+config.realTrading = process.argv[4] || false;
 
 //BINANCE API
 config.apiKey = process.env.BOT_API;
@@ -27,7 +30,7 @@ config.apiSecret = process.env.BOT_APIKEY;
 
 config.tradingMoney = process.argv[5] || 100;
 
-config.takeProfit = 2;
-config.stopLoss = 1;
+config.takeProfit = process.argv[6] || 2;
+config.stopLoss = - (process.argv[7] || 1);
 
 module.exports = config;

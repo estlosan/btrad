@@ -24,7 +24,7 @@ module.exports = {
 
         if(bot.enoughCandles){
 
-            generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
+            generateMsg(bot, bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
 
             if(
                 bot.lookback[0].close > bot.lookback[0].atr_trail_stop && 

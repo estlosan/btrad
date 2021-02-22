@@ -32,7 +32,7 @@ module.exports = {
         if(bot.state == 'buy'){
             return;
         }
-        if(bot.realTime){
+        if(bot.realTime === true && bot.realTrading === true){
             console.log("DANGER_______________________REAL BUY______________________")
             let quantityToBuy = bot.money / bot.actualCandle.close;
             let quantityToBuyFixed = parseFloat(quantityToBuy).toFixed(bot.minQty)
@@ -57,7 +57,7 @@ module.exports = {
                         localStorage.setItem(`${bot.pair}_tokensToSell`, `${bot.quantity}`)
                         localStorage.setItem(`${bot.pair}_moneyToBuy`, 0)
                         console.log("Real BUY\n");
-                        generateMsg(bot.pair, bot.actualCandle.time, bot.state, response.status, bot.actualCandle.close);
+                        generateMsg(bot, bot.pair, bot.actualCandle.time, bot.state, response.status, bot.actualCandle.close);
                         return;
                     }
                     const checkStatus = () => {
@@ -75,7 +75,7 @@ module.exports = {
                                 localStorage.setItem(`${bot.pair}_tokensToSell`, `${bot.quantity}`)
                                 localStorage.setItem(`${bot.pair}_moneyToBuy`, 0)
                                 console.log("Real BUY\n");
-                                generateMsg(bot.pair, bot.actualCandle.time, bot.state, response.status, bot.actualCandle.close);
+                                generateMsg(bot, bot.pair, bot.actualCandle.time, bot.state, response.status, bot.actualCandle.close);
                                 return;
                             }
                             binance.cancel(`${bot.pair}`, orderId, (error, response, symbol) => {
@@ -91,7 +91,7 @@ module.exports = {
         }
         else {
             bot.state = 'buy'
-            generateMsg(bot.pair, bot.actualCandle.time, bot.state, "FILLED", bot.actualCandle.close);
+            generateMsg(bot, bot.pair, bot.actualCandle.time, bot.state, "FILLED", bot.actualCandle.close);
             bot.quantity = bot.money / bot.actualCandle.close;
             bot.prevMoney = bot.money
             bot.buyPrice = bot.actualCandle.close;
@@ -106,7 +106,7 @@ module.exports = {
         if(bot.state == 'sell' || bot.state == 'initial'){
             return;
         }
-        if(bot.realTime){
+        if(bot.realTime === true && bot.realTrading === true){
             console.log("DANGER_______________________REAL SELL______________________")
             let errorMsg = "MSG: ";
             operation.attempt((attempts) => {
@@ -132,7 +132,7 @@ module.exports = {
                         localStorage.setItem(`${bot.pair}_moneyToBuy`, `${bot.money}`)
                         localStorage.setItem(`${bot.pair}_tokensToSell`, 0)
                         console.log("Real SELL\n");
-                        generateMsg(bot.pair, bot.actualCandle.time, bot.state, response.status, bot.actualCandle.close, beneficePercent);
+                        generateMsg(bot, bot.pair, bot.actualCandle.time, bot.state, response.status, bot.actualCandle.close, beneficePercent);
                         return;
                     }
                     const checkStatus = () => {
@@ -153,7 +153,7 @@ module.exports = {
                                 localStorage.setItem(`${bot.pair}_moneyToBuy`, `${bot.money}`)
                                 localStorage.setItem(`${bot.pair}_tokensToSell`, 0)
                                 console.log("Real SELL\n");
-                                generateMsg(bot.pair, bot.actualCandle.time, bot.state, response.status, bot.actualCandle.close, beneficePercent);
+                                generateMsg(bot, bot.pair, bot.actualCandle.time, bot.state, response.status, bot.actualCandle.close, beneficePercent);
                                 return;
                             }
                             binance.cancel(`${bot.pair}`, orderId, (error, response, symbol) => {
@@ -170,7 +170,7 @@ module.exports = {
         else {
             bot.state = "sell"
             let beneficePercent = ((bot.actualCandle.close - bot.buyPrice) / bot.buyPrice) * 100;
-            generateMsg(bot.pair, bot.actualCandle.time, bot.state, "FILLED", bot.actualCandle.close, beneficePercent);
+            generateMsg(bot, bot.pair, bot.actualCandle.time, bot.state, "FILLED", bot.actualCandle.close, beneficePercent);
             bot.money = (bot.quantity * bot.actualCandle.close) - (0.002 * bot.quantity * bot.actualCandle.close);
             bot.quantity = 0;
             bot.buyPrice = 0;

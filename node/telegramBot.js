@@ -1,5 +1,4 @@
 const TelegramBot = require('node-telegram-bot-api');
-const { realTime } = require('./../config.js');
 require('dotenv').config()
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TELEGRAM_TOKEN;
@@ -15,34 +14,33 @@ const buy = "\u{1F4C8}"
 const sell = "\u{1F4C9}"
 
 // Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token);
+const telegramBot = new TelegramBot(token);
 
-const sendMsg = (chatId, msg) => {
-    if(!realTime) {
-        console.log(msg)
+const sendMsg = (bot, chatId, msg) => {
+    console.log(msg)
+    if(bot.realTrading === false || bot.realTime === false) {
+        return;
     }
-    else {
-        chatId = chatId || chatIdDev;
-        bot.sendMessage(chatId, msg, { parse_mode: 'HTML' });
-    }
-    
+    /* chatId = chatId || chatIdDev;
+    telegramBot.sendMessage(chatId, msg, { parse_mode: 'HTML' });
+     */
 }
 
-const generateMsg = (asset, time, type, orderStatus, price, benefice) => {
+const generateMsg = (bot, asset, time, type, orderStatus, price, benefice) => {
     if(type.includes("buy") || type.includes("initial")){
-        sendMsg(chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${buy} <b>COMPRA:</b> ${price}${coin} \n <b>ORDER STATUS:</b> ${orderStatus}\n`);
+        sendMsg(bot, chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${buy} <b>COMPRA:</b> ${price}${coin} \n <b>ORDER STATUS:</b> ${orderStatus}\n`);
     }
     else if (type.includes("sell")){
-        sendMsg(chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${sell} <b>VENTA:</b> ${price}${coin}\n <b>BENEFICIO:</b> ${benefice.toFixed(4)}% \n <b>ORDER STATUS:</b> ${orderStatus}`);
+        sendMsg(bot, chatIdPro, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ${sell} <b>VENTA:</b> ${price}${coin}\n <b>BENEFICIO:</b> ${benefice.toFixed(4)}% \n <b>ORDER STATUS:</b> ${orderStatus}`);
     }
     else if(type.includes("preOrder")){
-        sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n <b>NEW ORDER</b> \n`);
+        sendMsg(bot, chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n <b>NEW ORDER</b> \n`);
     }
     else if (type.includes("Info")){
-        sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ONLINE \n`);
+        sendMsg(bot, chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n ONLINE \n`);
     }
     else if (type.includes("takeProfit")){
-        sendMsg(chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n TakeProfit updated \n`);
+        sendMsg(bot, chatIdDev, ` ${money} #${asset} \n ${timeEmoji} ${time} \n TakeProfit updated \n`);
     }
 }
 

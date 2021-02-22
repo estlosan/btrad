@@ -106,3 +106,5 @@ dist
 .scratch/
 
 ./node/trxInfo.txt
+
+*.csv
