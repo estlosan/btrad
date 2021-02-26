@@ -13,7 +13,9 @@ if (typeof localStorage === "undefined" || localStorage === null) {
 const binance = require('node-binance-api')().options({
     APIKEY: `${config.apiKey}`,
     APISECRET: `${config.apiSecret}`,
-    useServerTime: true // If you get timestamp errors, synchronize to server time at startup
+    useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
+    reconnect: true,
+    recvWindow: 60000,
 });
 
 const chatIdError = '-307261607'; // Error

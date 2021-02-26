@@ -1,25 +1,38 @@
-const ema = require('./../../indicators/ema');
-const sendMsg = require('./../../node/telegramBot');
-const { buy, sell } = require('./../../node/paperTrading.js');
+const atr = require('./../../indicators/atr.js');
+const ssma = require('./../../indicators/ssma.js');
+const wma = require('./../../indicators/wma.js');
+const { generateMsg } = require('./../../node/telegramBot');
+const { buy, sell } = require('./../../node/trading');
 
-//  buy(paperTrading, actualCandle.close);
-//  sell(paperTrading, actualCandle.close);
 
 module.exports = {
 
-    onRealTime: function(bot, paperTrading) {
+    onRealTime: function(bot) {
     
     },
 
-    onCandle: function(bot, paperTrading) {
-        ema(bot, "ema12", 12);
-        ema(bot, "ema26", 26);
-        ema(bot, "ema50", 50);
+    onCandle: function(bot) {
+        ssma(bot, "ssma", 4);
+        
+       
 
-        console.log("\n\nCLOSE " + bot.actualCandle.close)
-        console.log("\n\nEMA12: " + bot.actualCandle.ema12)
-        console.log("EMA26: " + bot.actualCandle.ema26)
-        console.log("EMA50: " + bot.actualCandle.ema50+ "\n\n")
+        if(bot.enoughCandles){
+
+            generateMsg(bot, bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
+
+            console.log(bot.actualCandle.close)
+            console.log(bot.actualCandle.ssma)
+            if(
+                bot.actualCandle.close < bot.actualCandle.ssma
+            ) {
+                sell(bot);
+            }
+            else if(
+                bot.actualCandle.close > bot.actualCandle.ssma
+            ) {
+                buy(bot)
+            }
+        }
     } 
 }
 

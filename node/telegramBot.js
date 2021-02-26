@@ -18,12 +18,10 @@ const telegramBot = new TelegramBot(token);
 
 const sendMsg = (bot, chatId, msg) => {
     console.log(msg)
-    if(bot.realTrading === false || bot.realTime === false) {
-        return;
+    if (bot.realTrading === true && bot.realTime === true){
+        chatId = chatId || chatIdDev;
+        telegramBot.sendMessage(chatId, msg, { parse_mode: 'HTML' });
     }
-    /* chatId = chatId || chatIdDev;
-    telegramBot.sendMessage(chatId, msg, { parse_mode: 'HTML' });
-     */
 }
 
 const generateMsg = (bot, asset, time, type, orderStatus, price, benefice) => {

@@ -1,8 +1,8 @@
 const path = require('path');
 const config = require('./../config.js');
 const binance = require('node-binance-api')().options({
-    APIKEY: '<key>',
-    APISECRET: '<secret>',
+    APIKEY: `${config.apiKey}`,
+    APISECRET: `${config.apiSecret}`,
     useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
     reconnect: true,
     recvWindow: 60000,
@@ -36,6 +36,7 @@ const initBot = () => {
     bot.period = {}
     bot.lookback = [];
     bot.pair = config.pair;
+    bot.realTime = false;
     bot.realTrading = config.realTrading;
 
     bot.tradingMoney = config.tradingMoney;

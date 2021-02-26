@@ -12,7 +12,9 @@ if (typeof localStorage === "undefined" || localStorage === null) {
 const binance = require('node-binance-api')().options({
     APIKEY: `${config.apiKey}`,
     APISECRET: `${config.apiSecret}`,
-    useServerTime: true // If you get timestamp errors, synchronize to server time at startup
+    useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
+    reconnect: true,
+    recvWindow: 60000,
 });
 
 // CODE
@@ -50,10 +52,10 @@ const init = async () => {
     let bot = initBot();
     interval = interval[0] 
     try {
-        await getBacktestCandles(bot, interval, candleLimit, toDate, minCandles, strategyData);
+        await getBacktestCandles(bot, interval, candleLimit, Date.now(), minCandles, strategyData);
 
         bot.realTime = true;
-        bot.tradingMoney = process.argv[5] || config.tradingMoney;
+        bot.tradingMoney = parseFloat(process.argv[5]) || config.tradingMoney;
         bot.money = localStorage.getItem(`${bot.pair}_moneyToBuy`) || bot.tradingMoney;     //quantity*price=money
         bot.quantity = localStorage.getItem(`${bot.pair}_tokensToSell`) || 0;
         bot.state = localStorage.getItem(`${bot.pair}_state`) || 'initial';
@@ -82,6 +84,7 @@ const init = async () => {
                 calculateMinQuantity(bot)
                 .then((result) => {
                     bot.minQty = result;
+                    console.log(`Min Quantity: ${bot.minQty}`)
                     strategyData.onCandle(bot);
                     bot.lookback.unshift(bot.actualCandle);
                     bot.lookback.pop();

@@ -11,8 +11,12 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/node/realBacktesting.js",
+            "program": "${workspaceFolder}/node/run.js",
             "args": [
+                "BTTUSDT",
+                "atr_trailing_stop_buena_ada",
+                "true",
+                "0.05"
             ]
         }
     ]
