@@ -55,6 +55,7 @@ module.exports = {
                         bot.quantity = quantityToBuyFixed;
                         bot.money = 0;
                         bot.state = 'buy'
+                        bot.buyPrice = bot.actualCandle.close;
                         localStorage.setItem(`${bot.pair}_state`, "buy")
                         localStorage.setItem(`${bot.pair}_tokensToSell`, `${bot.quantity}`)
                         localStorage.setItem(`${bot.pair}_moneyToBuy`, 0)
@@ -73,6 +74,7 @@ module.exports = {
                                 bot.quantity = quantityToBuyFixed;
                                 bot.money = 0;
                                 bot.state = 'buy'
+                                bot.buyPrice = bot.actualCandle.close;
                                 localStorage.setItem(`${bot.pair}_state`, "buy")
                                 localStorage.setItem(`${bot.pair}_tokensToSell`, `${bot.quantity}`)
                                 localStorage.setItem(`${bot.pair}_moneyToBuy`, 0)

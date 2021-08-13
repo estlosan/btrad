@@ -153,19 +153,25 @@ const init = async () => {
     let bot = initBot();
     try {
         let results = {};
-        for (const time of interval){
-            let csvFile = __dirname + csvRoute + `${bot.pair}_${time}.csv`
-            if (!fs.existsSync(csvFile)) {
-                await binanceBacktestToCSV(bot.pair, time, fromDate, toDate, candleLimit, csvFile)
-            } 
-            await getBacktestCandlesCSV(bot, csvFile, strategyData, minCandles);
-            console.log(`\t ${bot.pair}_${time}.csv --> Benefice: ${bot.benefice}`)
-            results[time] = [bot.benefice, bot.prevMoney]
-            console.log(bot.lookback[0])
-            bot = initBot()
-            await sleep(5000) 
+        for (const pair of bot.pair){
+            results[pair] = {}
+            for (const time of interval){
+                results[pair][time] = {}
+                bot.pair = pair;
+                let csvFile = __dirname + `/backtest/1Oct2017_1Ene2021${pair}/` + `${pair}_${time}.csv`;
+                if (!fs.existsSync(csvFile)) {
+                    await binanceBacktestToCSV(pair, time, fromDate, toDate, candleLimit, csvFile)
+                } 
+                await getBacktestCandlesCSV(bot, csvFile, strategyData, minCandles);
+                console.log(`\t ${pair}_${time}.csv --> Benefice: ${bot.benefice}`)
+                results[pair][time].benefice = bot.benefice;
+                results[pair][time].initialMoney = bot.tradingMoney;
+                results[pair][time].finalMoney = bot.prevMoney;
+                bot = initBot()
+                await sleep(5000) 
+            }
         }
-        console.log(`Benefice: ${JSON.stringify(results)}`)
+        console.log(results);
     } catch (err) {
         console.log("--------------ERROR INIT---------------")
         console.log(err)

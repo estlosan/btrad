@@ -50,7 +50,8 @@ const init = async () => {
         strategyName
     } = loadConfig()
     let bot = initBot();
-    interval = interval[0] 
+    interval = interval[0]
+    bot.pair = bot.pair[0]
     try {
         await getBacktestCandles(bot, interval, candleLimit, Date.now(), minCandles, strategyData);
 

@@ -6,7 +6,7 @@ module.exports = function sma (bot, key, length, source_key) {
     let SMA = auxLookback
       .slice(0, length)
       .reduce((sum, candle) => {
-        return sum + candle["close"]
+        return sum + candle[source_key]
       }, 0)
     bot.actualCandle[key] = SMA / length
   }

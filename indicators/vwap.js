@@ -1,27 +1,18 @@
-module.exports = function vwap (s, key, length, max_period, source_key) {
-  if (!source_key) source_key = 'close'
-    
-  if (s.lookback.length >= length) {
-    if(!s.vwap){
-      s.vwap = 0, 
-      s.vwapMultiplier = 0, 
-      s.vwapDivider = 0,
-      s.vwapCount = 0
+module.exports = function vwap (bot, key) {
+  let hlc3 =  (bot.actualCandle.high + bot.actualCandle.low + bot.actualCandle.close) / 3;
+  bot.actualCandle.hcl3Volume = parseFloat(hlc3) * parseFloat(bot.actualCandle.volume);
+  if (bot.lookback.length > 0) {
+    let partsYesterday = bot.lookback[0].time.split(' ')
+    let partsToday = bot.actualCandle.time.split(' ')
+
+    if(partsYesterday[0] !== partsToday[0] || partsYesterday[1] !== partsToday[1]){
+      bot.actualCandle.comulativeHcl3Volume = bot.actualCandle.hcl3Volume;
+      bot.actualCandle.comulativeVolume = bot.actualCandle.volume;
+    } else {
+      bot.actualCandle.comulativeHcl3Volume = bot.actualCandle.hcl3Volume + bot.lookback[0].comulativeHcl3Volume
+      bot.actualCandle.comulativeVolume = bot.lookback[0].comulativeVolume + bot.actualCandle.volume;
     }
-      
-    if(max_period && s.vwapCount > max_period){
-      s.vwap = 0, 
-      s.vwapMultiplier = 0, 
-      s.vwapDivider = 0,
-      s.vwapCount = 0
-    }
-      
-    s.vwapMultiplier = s.vwapMultiplier + parseFloat(s.period[source_key]) * parseFloat(s.period['volume'])
-    s.vwapDivider = s.vwapDivider + parseFloat(s.period['volume'])
-      
-    s.period[key] = s.vwap = s.vwapMultiplier / s.vwapDivider
-      
-    s.vwapCount++
-  }
+    bot.actualCandle[key] = bot.actualCandle.comulativeHcl3Volume / bot.actualCandle.comulativeVolume;
+  } 
 }
 

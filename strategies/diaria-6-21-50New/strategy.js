@@ -20,17 +20,16 @@ module.exports = {
 
         if(bot.enoughCandles){
 
-            generateMsg(bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
+            generateMsg(bot, bot.pair, bot.actualCandle.time, "Info", bot.actualCandle.close);
 
             if(
-                bot.lookback[0].close > bot.lookback[0].atr_trail_stop && 
-                bot.actualCandle.close < bot.actualCandle.atr_trail_stop
+                bot.actualCandle.ema6 < bot.actualCandle.ema21 ||
+                bot.actualCandle.ema6 < bot.actualCandle.ema50 ||
+                bot.actualCandle.ema21 < bot.actualCandle.ema50
             ) {
                 sell(bot);
             }
             else if(
-                (bot.lookback[0].ema6 < bot.lookback[0].ema21 ||
-                bot.lookback[0].ema6 < bot.lookback[0].ema50) &&
                 bot.actualCandle.ema6 > bot.actualCandle.ema21 &&
                 bot.actualCandle.ema6 > bot.actualCandle.ema50 &&
                 bot.actualCandle.ema21 > bot.actualCandle.ema50
